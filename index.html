@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMT-AI对话助手</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .logo {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            margin-right: 10px;
+        }
+        .user-info {
+            padding: 15px !important;
+        }
+        .candy-loading {
+            display: inline-block;
+            animation: candyBounce 1s infinite;
+        }
+        @keyframes candyBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .thinking-time {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .thinking-time.show {
+            opacity: 1;
+        }
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+        .confirm-dialog {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            text-align: center;
+            min-width: 300px;
+        }
+        .confirm-dialog.show {
+            display: block;
+        }
+        .modal-overlay.show {
+            display: block;
+        }
+        .confirm-dialog .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .confirm-dialog button {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        .confirm-dialog .confirm {
+            background: #ff4d4f;
+            color: white;
+        }
+        .confirm-dialog .confirm:hover {
+            background: #ff7875;
+        }
+        .confirm-dialog .cancel {
+            background: #f0f0f0;
+            color: #666;
+        }
+        .confirm-dialog .cancel:hover {
+            background: #d9d9d9;
+        }
+        .input-area {
+            padding: 20px;
+            border-top: 1px solid #e0e0e0;
+            background: #fff;
+        }
+        .input-container {
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 12px;
+        }
+        .input-wrapper {
+            position: relative;
+            background: #fff;
+            margin-bottom: 8px;
+        }
+        #messageInput {
+            width: 100%;
+            border: none;
+            outline: none;
+            resize: none;
+            min-height: 24px;
+            font-size: 14px;
+            line-height: 1.5;
+            padding: 0;
+            margin: 0;
+        }
+        .bottom-buttons {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 5px;
+        }
+        .model-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            background: #f5f5f5;
+            color: #666;
+            cursor: pointer;
+            font-size: 14px;
+            white-space: nowrap;
+            transition: all 0.3s;
+        }
+        .model-button.active {
+            background: #ff69b4;
+            color: white;
+            border-color: #ff69b4;
+        }
+        .model-button.active i {
+            color: white;
+        }
+        .right-buttons {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .tool-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            color: #666;
+            transition: color 0.3s;
+        }
+        .send-button {
+            background-color: #FFB6C1;  /* 浅粉色 */
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .send-button:hover {
+            background-color: #FF69B4;  /* 热粉色 */
+        }
+        .send-button i {
+            color: white;
+            font-size: 18px;
+        }
+        .tool-button:hover {
+            color: #FFB6C1;
+        }
+        .sidebar {
+            width: 280px;
+            background-color: #ffffff;
+            border-right: 1px solid #e0e0e0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        .sidebar.collapsed {
+            width: 80px;
+            padding: 15px 10px;
+        }
+        .sidebar.collapsed .menu-items,
+        .sidebar.collapsed .chat-history,
+        .sidebar.collapsed .clear-history,
+        .sidebar.collapsed .user-info span {
+            display: none;
+        }
+        .sidebar.collapsed .logo {
+            width: 40px;
+            height: 40px;
+            margin: 0 auto 10px;
+        }
+        .toggle-sidebar {
+            position: absolute;
+            top: 20px;
+            right: -12px;
+            width: 24px;
+            height: 24px;
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+            transition: transform 0.3s ease;
+        }
+        .sidebar.collapsed .toggle-sidebar {
+            transform: rotate(180deg);
+        }
+        .sidebar.collapsed .new-chat {
+            padding: 8px;
+            justify-content: center;
+        }
+        .sidebar.collapsed .new-chat span {
+            display: none;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+        }
+        .logo {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            margin-right: 10px;
+            transition: all 0.3s ease;
+        }
+        .message {
+            display: flex;
+            margin: 10px 20px;
+            max-width: 80%;
+        }
+        .user-message {
+            margin-left: auto;  /* 用户消息靠右 */
+            flex-direction: row-reverse;  /* 内容靠右 */
+        }
+        .ai-message {
+            margin-right: auto;  /* AI消息靠左 */
+        }
+        .message-content {
+            padding: 15px 20px;
+            border-radius: 12px;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        .user-message .message-content {
+            background-color: #ff69b4;  /* 用户消息使用粉色背景 */
+            color: white;  /* 文字颜色改为白色以提高可读性 */
+        }
+        .ai-message .message-content {
+            background-color: #f5f5f5;  /* AI消息使用浅灰色背景 */
+            color: #333;
+        }
+        /* 确保消息内容中的段落没有多余的边距 */
+        .message-content p {
+            margin: 0;
+        }
+        /* 调整消息气泡的形状 */
+        .user-message .message-content {
+            border-top-right-radius: 4px;  /* 用户消息右上角更尖 */
+        }
+        .ai-message .message-content {
+            border-top-left-radius: 4px;  /* AI消息左上角更尖 */
+        }
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .menu-item:hover {
+            background-color: #FFB6C1;
+            color: white;
+        }
+        .menu-item:hover i {
+            color: white;
+        }
+        .action-button {
+            padding: 8px 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 20px;
+            background: white;
+            color: #666;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s;
+        }
+        .action-button:hover {
+            background: #FFB6C1;
+            color: white;
+            border-color: #FFB6C1;
+        }
+        .action-button:hover i {
+            color: white;
+        }
+        .clear-history {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            cursor: pointer;
+            color: #666;
+            transition: all 0.3s;
+        }
+        .clear-history:hover {
+            color: white;
+            background-color: #FFB6C1;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="thinking-time" id="thinkingTime"></div>
+    <div class="modal-overlay" id="modalOverlay"></div>
+    <div class="confirm-dialog" id="confirmDialog">
+        <p>确定要清空所有聊天记录吗？</p>
+        <p style="color: #999; font-size: 12px; margin-top: 5px;">此操作不可恢复</p>
+        <div class="buttons">
+            <button class="cancel">取消</button>
+            <button class="confirm">确定</button>
+        </div>
+    </div>
+    <div class="chat-container">
+        <!-- 左侧菜单 -->
+        <div class="sidebar">
+            <button class="toggle-sidebar" id="toggleSidebar">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <div class="user-info">
+                <img src="logo.png" alt="SMT Logo" class="logo">
+                <span>SMT-AI</span>
+            </div>
+            <div class="menu-item new-chat" id="newChat">
+                <i class="fas fa-plus"></i>
+                <span>新对话</span>
+            </div>
+            <div class="menu-items">
+                <div class="menu-item" data-prompt="帮我搜索：">
+                    <i class="fas fa-search"></i>
+                    <span>AI 搜索</span>
+                </div>
+                <div class="menu-item" data-prompt="帮我写作：">
+                    <i class="fas fa-briefcase"></i>
+                    <span>帮我写作</span>
+                </div>
+                <div class="menu-item" data-prompt="帮我阅读：">
+                    <i class="fas fa-book"></i>
+                    <span>AI 阅读</span>
+                </div>
+                <div class="menu-item" data-prompt="帮我编程代码：">
+                    <i class="fas fa-code"></i>
+                    <span>AI 编程</span>
+                </div>
+                <div class="menu-item" data-prompt="帮我浏览网站：">
+                    <i class="fas fa-globe"></i>
+                    <span>AI 看网站</span>
+                </div>
+            </div>
+            <div class="chat-history" id="chatHistory">
+                <!-- 历史对话将在这里动态添加 -->
+            </div>
+            <!-- 清空历史记录按钮 -->
+            <div class="clear-history" id="clearHistory">
+                <i class="fas fa-trash"></i>
+                <span>清空历史记录</span>
+            </div>
+        </div>
+
+        <!-- 主聊天区域 -->
+        <div class="main-content">
+            <div class="chat-messages" id="chatMessages">
+                <div class="message ai-message">
+                    <div class="message-content">
+                        <h2>Hi，我是SMTAI<span class="candy-loading">🍬</span></h2>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 输入区域 -->
+            <div class="input-area">
+                <div class="input-container">
+                    <div class="input-wrapper">
+                        <textarea id="messageInput" placeholder="发消息、输入 @ 选择技能或／选择文件" rows="1"></textarea>
+                    </div>
+                    <div class="bottom-buttons">
+                        <button class="model-button" id="contextToggle">
+                            <i class="fas fa-link"></i>
+                            上下文功能
+                        </button>
+                        <div class="right-buttons">
+                            <button class="tool-button" id="cutButton" title="剪切聊天内容">
+                                <i class="fas fa-cut"></i>
+                            </button>
+                            <button class="send-button" id="sendButton">
+                                <i class="fas fa-arrow-up"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 快捷功能区 -->
+            <div class="quick-actions">
+                <button class="action-button" data-prompt="帮我编程代码：">
+                    <i class="fas fa-code"></i>
+                    AI 编程
+                </button>
+                <button class="action-button" data-prompt="帮我阅读：">
+                    <i class="fas fa-book"></i>
+                    AI 阅读
+                </button>
+                <button class="action-button" data-prompt="帮我浏览网站：">
+                    <i class="fas fa-globe"></i>
+                    网页浏览
+                </button>
+                <button class="action-button" data-prompt="帮我搜索：">
+                    <i class="fas fa-search"></i>
+                    AI 搜索
+                </button>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html> 
