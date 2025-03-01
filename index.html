@@ -125,7 +125,6 @@
         }
         .bottom-buttons {
             display: flex;
-            justify-content: space-between;
             align-items: center;
             padding: 0 5px;
         }
@@ -142,6 +141,12 @@
             font-size: 14px;
             white-space: nowrap;
             transition: all 0.3s;
+            min-width: 80px;
+            justify-content: center;
+            margin-right: 8px;
+        }
+        .model-button:last-of-type {
+            margin-right: auto;
         }
         .model-button.active {
             background: #ff69b4;
@@ -411,12 +416,16 @@
             <div class="input-area">
                 <div class="input-container">
                     <div class="input-wrapper">
-                        <textarea id="messageInput" placeholder="发消息、输入 @ 选择技能或／选择文件" rows="1"></textarea>
+                        <textarea id="messageInput" placeholder="完美回答（P1）处于测试状态，思考时间会增加或出错！" rows="1"></textarea>
                     </div>
                     <div class="bottom-buttons">
                         <button class="model-button" id="contextToggle">
                             <i class="fas fa-link"></i>
                             上下文功能
+                        </button>
+                        <button class="model-button" id="perfectAnswerToggle">
+                            <i class="fas fa-check-double"></i>
+                            完美回答（P1）
                         </button>
                         <div class="right-buttons">
                             <button class="tool-button" id="cutButton" title="剪切聊天内容">
@@ -434,23 +443,23 @@
             <div class="quick-actions">
                 <button class="action-button" data-prompt="帮我编程代码：">
                     <i class="fas fa-code"></i>
-                    AI 编程
+                    V3大模型
                 </button>
                 <button class="action-button" data-prompt="帮我阅读：">
                     <i class="fas fa-book"></i>
-                    AI 阅读
-                </button>
-                <button class="action-button" data-prompt="帮我浏览网站：">
-                    <i class="fas fa-globe"></i>
-                    网页浏览
+                    思考时间
                 </button>
                 <button class="action-button" data-prompt="帮我搜索：">
                     <i class="fas fa-search"></i>
-                    AI 搜索
+                    有彩蛋🍬
+                </button>
+                <button class="action-button" data-prompt="帮我浏览网站：">
+                    <i class="fas fa-globe"></i>
+                    SMT更多作品
                 </button>
             </div>
         </div>
     </div>
     <script src="script.js"></script>
 </body>
-</html> 
+</html>

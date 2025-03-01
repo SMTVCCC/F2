@@ -12,10 +12,18 @@ document.addEventListener('DOMContentLoaded', function() {
     const modalOverlay = document.getElementById('modalOverlay');
     const toggleSidebar = document.getElementById('toggleSidebar');
     const sidebar = document.querySelector('.sidebar');
+    const perfectAnswerToggle = document.getElementById('perfectAnswerToggle');
 
     // 调试信息：检查必要元素是否存在
-    console.log('messageInput exists:', !!messageInput);
-    console.log('chatMessages exists:', !!chatMessages);
+    console.log('[调试] 发送按钮元素:', !!sendButton);
+    console.log('[调试] 发送按钮HTML:', sendButton ? sendButton.outerHTML : '不存在');
+    console.log('[调试] messageInput元素:', !!messageInput);
+    console.log('[调试] chatMessages元素:', !!chatMessages);
+
+    if (!sendButton) {
+        console.error('[错误] 发送按钮未找到！');
+        return;
+    }
 
     // API配置
     const apiUrl = 'https://api.deepseek.com/chat/completions';
@@ -24,6 +32,43 @@ document.addEventListener('DOMContentLoaded', function() {
     // 上下文模式配置
     let contextMode = false;
     let lastUserMessage = '';
+
+    // 完美回答模式配置
+    let perfectAnswerMode = false;
+    if (perfectAnswerToggle) {
+        console.log('[调试] 初始化完美回答按钮');
+        perfectAnswerToggle.addEventListener('click', function() {
+            console.log('[调试] 点击完美回答按钮');
+            perfectAnswerMode = !perfectAnswerMode;
+            console.log('[调试] 完美回答模式:', perfectAnswerMode ? '开启' : '关闭');
+            
+            this.classList.toggle('active');
+            this.title = perfectAnswerMode ? '已启用完美回答' : '已关闭完美回答';
+            
+            // 修改视觉反馈样式
+            if (perfectAnswerMode) {
+                this.style.backgroundColor = '#FF69B4';  // 热粉色
+                this.style.color = 'white';
+                this.style.borderColor = '#FF69B4';
+                const icon = this.querySelector('i');
+                if (icon) icon.style.color = 'white';
+            } else {
+                this.style.backgroundColor = '';
+                this.style.color = '';
+                this.style.borderColor = '';
+                const icon = this.querySelector('i');
+                if (icon) icon.style.color = '';
+            }
+            
+            // 触发一个自定义事件，用于调试
+            const event = new CustomEvent('perfectAnswerModeChange', { 
+                detail: { enabled: perfectAnswerMode } 
+            });
+            document.dispatchEvent(event);
+        });
+    } else {
+        console.error('[错误] 未找到完美回答按钮元素');
+    }
 
     // 存储所有对话历史
     let allChats = JSON.parse(localStorage.getItem('allChats')) || [];
@@ -46,32 +91,29 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 处理侧边栏折叠/展开
     toggleSidebar.addEventListener('click', () => {
-        console.log('Toggle sidebar clicked'); // 添加调试日志
+        console.log('Toggle sidebar clicked');
         sidebar.classList.toggle('collapsed');
         localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
     });
 
     // 清空聊天记录并更新界面
     function clearChatHistory() {
-        localStorage.removeItem('allChats');  // 删除 localStorage 中的聊天记录
-        allChats = [];  // 清空本地数组
-        chatHistory.innerHTML = '';  // 清空聊天历史栏
-        chatMessages.innerHTML = '';  // 清空当前聊天框内容
-        createNewChat();  // 创建新的对话
+        localStorage.removeItem('allChats');
+        allChats = [];
+        chatHistory.innerHTML = '';
+        chatMessages.innerHTML = '';
+        createNewChat();
         modalOverlay.classList.remove('show');
         confirmDialog.classList.remove('show');
     }
 
     // 创建新对话
     function createNewChat() {
-        // 保存当前对话到历史记录
         if (currentChat.messages.length > 1) {
             allChats.push(currentChat);
             addChatToHistory(currentChat);
             saveChatsToStorage();
         }
-
-        // 清空聊天区域
         chatMessages.innerHTML = `
             <div class="message ai-message">
                 <div class="message-content">
@@ -79,8 +121,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             </div>
         `;
-
-        // 创建新的当前对话
         currentChatId = Date.now();
         currentChat = {
             id: currentChatId,
@@ -97,14 +137,12 @@ document.addEventListener('DOMContentLoaded', function() {
         historyItem.className = 'history-item';
         historyItem.textContent = chat.messages[1]?.content.substring(0, 20) + '...';
         historyItem.dataset.chatId = chat.id;
-        
         historyItem.addEventListener('click', () => loadChat(chat));
         chatHistory.insertBefore(historyItem, chatHistory.firstChild);
     }
 
     // 加载历史对话
     function loadChat(chat) {
-        // 保存当前对话
         if (currentChat.messages.length > 1) {
             const existingIndex = allChats.findIndex(c => c.id === currentChat.id);
             if (existingIndex === -1) {
@@ -113,8 +151,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 saveChatsToStorage();
             }
         }
-
-        // 显示选中的对话
         chatMessages.innerHTML = '';
         chat.messages.forEach(message => {
             const messageDiv = document.createElement('div');
@@ -126,7 +162,6 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
             chatMessages.appendChild(messageDiv);
         });
-
         currentChat = chat;
     }
 
@@ -141,7 +176,6 @@ document.addEventListener('DOMContentLoaded', function() {
         confirmDialog.classList.add('show');
     });
 
-    // 处理确认对话框按钮
     confirmDialog.querySelector('.cancel').addEventListener('click', () => {
         modalOverlay.classList.remove('show');
         confirmDialog.classList.remove('show');
@@ -149,17 +183,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     confirmDialog.querySelector('.confirm').addEventListener('click', clearChatHistory);
 
-    // 点击遮罩层关闭对话框
     modalOverlay.addEventListener('click', () => {
         modalOverlay.classList.remove('show');
         confirmDialog.classList.remove('show');
     });
 
     // 上下文模式切换
-    contextToggle.addEventListener('click', () => {
+    contextToggle.addEventListener('click', function() {
         contextMode = !contextMode;
-        contextToggle.classList.toggle('active');
-        contextToggle.title = contextMode ? '已启用上下文关联' : '已关闭上下文关联';
+        this.classList.toggle('active');
+        this.title = contextMode ? '已启用上下文关联' : '已关闭上下文关联';
     });
 
     // 剪切聊天内容
@@ -173,32 +206,221 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 </div>
             `;
-            alert('聊天内容已剪切到剪贴板');
+            alert('聊天内容已剪贴到剪贴板');
         });
     });
 
-    // 发送消息
-    function sendMessage() {
-        const message = messageInput.value.trim();
-        if (message) {
-            addMessage(message, true);
-            messageInput.value = '';
-            messageInput.focus(); // 保持输入框焦点
+    // 添加消息到聊天界面
+    function addMessage(message, isUser = false, skipAIResponse = false) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${isUser ? 'user-message' : 'ai-message'}`;
+        messageDiv.innerHTML = `
+            <div class="message-content">
+                <p>${message}</p>
+            </div>
+        `;
+        chatMessages.appendChild(messageDiv);
+        
+        // 滚动到底部
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        
+        // 添加到当前聊天记录
+        currentChat.messages.push({
+            type: isUser ? 'user' : 'ai',
+            content: message
+        });
+        
+        // 如果是用户消息且不跳过AI响应，则获取AI响应
+        if (isUser && !skipAIResponse) {
+            getAIResponse(message);
         }
     }
 
-    // 处理发送按钮点击
-    sendButton.addEventListener('click', sendMessage);
-
-    // 处理回车键发送
-    messageInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
+    // 添加彩蛋动画样式
+    const style = document.createElement('style');
+    style.textContent = `
+        .candy-heart-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.5s;
+            transform-style: preserve-3d;
         }
-    });
+        .candy-heart {
+            position: absolute;
+            font-size: 45px;
+            transform-origin: center;
+        }
+        @keyframes candyFloat {
+            0% { 
+                opacity: 0;
+                transform: translateY(10px) rotate(0deg) scale(0.5); 
+            }
+            10% {
+                opacity: 1;
+                transform: translateY(0) rotate(5deg) scale(1);
+            }
+            50% { 
+                transform: translateY(-15px) rotate(-5deg) scale(1.1);
+            }
+            90% {
+                opacity: 1;
+                transform: translateY(0) rotate(5deg) scale(1);
+            }
+            100% { 
+                opacity: 0;
+                transform: translateY(10px) rotate(0deg) scale(0.5); 
+            }
+        }
+    `;
+    document.head.appendChild(style);
 
-    // 获取聊天内容
+    // 创建彩蛋动画
+    function createCandyHeart() {
+        const container = document.createElement('div');
+        container.className = 'candy-heart-container';
+        document.body.appendChild(container);
+
+        // 优化的心形坐标
+        const heartCoords = [
+            // 顶部
+            {x: 0, y: -2.2},
+            // 左上弧
+            {x: -2, y: -3},
+            {x: -3, y: -2},
+            {x: -3, y: -1},
+            {x: -2, y: 0},
+            // 右上弧
+            {x: 2, y: -3},
+            {x: 3, y: -2},
+            {x: 3, y: -1},
+            {x: 2, y: 0},
+            // 底部尖
+            {x: 1, y: 1},
+            {x: 0, y: 2},
+            {x: -1, y: 1}
+        ];
+
+        // 创建每个糖果表情并添加随机延迟
+        heartCoords.forEach((coord, index) => {
+            const candy = document.createElement('div');
+            candy.className = 'candy-heart';
+            candy.textContent = '🍬';
+            candy.style.left = coord.x * 40 + 'px';
+            candy.style.top = coord.y * 40 + 'px';
+            
+            // 添加随机动画延迟和持续时间
+            const randomDelay = Math.random() * 0.8;
+            const randomDuration = 2.5 + Math.random() * 1;
+            candy.style.animation = `candyFloat ${randomDuration}s ease-in-out ${randomDelay}s infinite`;
+            
+            container.appendChild(candy);
+        });
+
+        // 显示动画
+        requestAnimationFrame(() => {
+            container.style.opacity = '1';
+            setTimeout(() => {
+                container.style.opacity = '0';
+                setTimeout(() => {
+                    container.remove();
+                }, 500);
+            }, 2000);
+        });
+    }
+
+    // 发送消息的统一处理函数
+    function handleSendMessage(event) {
+        // 阻止默认行为
+        if (event) {
+            event.preventDefault();
+        }
+        
+        console.log('[调试] 触发发送消息');
+        const message = messageInput.value.trim();
+        
+        if (message) {
+            console.log('[调试] 发送消息:', message);
+            
+            // 检查是否触发彩蛋（匹配SMT或SMTAI，不区分大小写）
+            const upperMessage = message.trim().toUpperCase();
+            if (upperMessage === 'SMT' || upperMessage === 'SMTAI') {
+                createCandyHeart();
+            }
+            
+            // 检查是否有快速回复
+            const quickResponse = getQuickResponse(message);
+            if (quickResponse) {
+                // 如果有快速回复，直接显示，并跳过AI响应
+                addMessage(message, true, true); // 添加用户消息，跳过AI响应
+                messageInput.value = '';
+                messageInput.style.borderColor = '#ccc';
+                messageInput.style.borderWidth = '1px';
+                messageInput.focus();
+                
+                // 添加AI的快速回复
+                const aiMessage = document.createElement('div');
+                aiMessage.className = 'message ai-message';
+                aiMessage.innerHTML = `
+                    <div class="message-content">
+                        <p>${quickResponse}</p>
+                    </div>
+                `;
+                chatMessages.appendChild(aiMessage);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                
+                // 添加到当前聊天记录
+                currentChat.messages.push({
+                    type: 'ai',
+                    content: quickResponse
+                });
+            } else {
+                // 如果没有快速回复，走正常的AI响应流程
+                addMessage(message, true);
+                messageInput.value = '';
+                messageInput.style.borderColor = '#ccc';
+                messageInput.style.borderWidth = '1px';
+                messageInput.focus();
+            }
+        } else {
+            console.log('[调试] 消息为空，不发送');
+        }
+    }
+
+    // 为发送按钮添加点击事件（使用箭头函数以保持this的指向）
+    if (sendButton) {
+        sendButton.onclick = (event) => {
+            console.log('[调试] 发送按钮被点击');
+            handleSendMessage(event);
+        };
+    }
+
+    // 为输入框添加回车事件
+    if (messageInput) {
+        messageInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                console.log('[调试] 检测到回车键');
+                handleSendMessage(event);
+            }
+        });
+
+        messageInput.addEventListener('input', () => {
+            console.log('[调试] 输入框内容变化:', messageInput.value);
+            messageInput.style.borderColor = '#FF69B4';
+            messageInput.style.borderWidth = '2px';
+        });
+
+        messageInput.addEventListener('blur', () => {
+            messageInput.style.borderColor = '#ccc';
+            messageInput.style.borderWidth = '1px';
+        });
+    }
+
+    // 复制聊天内容
     function getChatContent() {
         return Array.from(chatMessages.children)
             .map(msg => {
@@ -208,86 +430,97 @@ document.addEventListener('DOMContentLoaded', function() {
             .join('\n');
     }
 
+    // 初始化按钮事件
+    function setupActionButtons() {
+        const menuItems = document.querySelectorAll('.menu-item');
+        console.log('[调试] 找到的菜单项数量:', menuItems.length);
+        menuItems.forEach((item, index) => {
+            console.log(`[调试] 处理第${index + 1}个菜单项:`, item.outerHTML);
+            const prompt = item.getAttribute('data-prompt');
+            item.addEventListener('click', () => {
+                console.log('[调试] 点击事件触发，当前输入框状态:',
+                    messageInput ? '存在' : '不存在',
+                    messageInput ? `值: ${messageInput.value}` : ''
+                );
+                if (messageInput) {
+                    messageInput.value = prompt;
+                    messageInput.focus();
+                }
+            });
+        });
+    }
+
     // 加载保存的聊天记录
     allChats.forEach(chat => {
         addChatToHistory(chat);
     });
 
+    setupActionButtons();
+
     // 添加快速回复功能
     function getQuickResponse(message) {
-        // 将用户消息转换为标准格式（去除空格、转小写）
-        const standardMessage = message.trim().toLowerCase();
+        const standardMessage = message.trim();
+        const timeQuestions = ['几点了', '现在是几点', '现在的时间', '时间'];
+        const dateQuestions = ['今天是星期几', '今天几号', '星期几', '日期'];
         
-        // 定义固定的时间问题格式
-        const timeQuestions = [
-            '几点了',
-            '现在是几点',
-            '现在的时间',
-            '时间'
+        console.log('[调试] 检查快速回复:', standardMessage);
+        
+        // SMTAI的随机回复
+        const smtaiResponses = [
+            '您好！我是SMT-AI智能助手SAI。如您有任何任何问题，我会尽我所能为您提供帮助。',
+            '你好！我是SMT-AI大模型V3，专门设计用来提供信息、解答问题、协助学习和执行各种任务。我可以帮助用户获取知识、解决问题、进行语言翻译、提供建议等。我的目标是使信息获取更加便捷，帮助用户更高效地完成任务。如果你有任何问题或需要帮助，随时可以问我！'
         ];
-
-        // 定义固定的日期问题格式
-        const dateQuestions = [
-            '今天是星期几',
-            '今天几号',
-            '星期几',
-            '几号'
-        ];
-
-        // 检查时间相关问题
+        
+        // 添加SMTAI的快捷回复（完全匹配，不区分大小写）
+        if (standardMessage.toUpperCase() === 'SMTAI') {
+            return smtaiResponses[Math.floor(Math.random() * smtaiResponses.length)];
+        }
+        
+        // 添加SMT彩蛋的快捷回复（匹配SMT，不区分大小写）
+        if (standardMessage.toUpperCase() === 'SMT') {
+            return '爱心💗🍬送给你，继续和V3大模型的SMTAI聊天吧～';
+        }
+        
         if (timeQuestions.includes(standardMessage)) {
             const now = new Date();
             const hours = now.getHours();
             const minutes = now.getMinutes().toString().padStart(2, '0');
             return `现在是 ${hours}:${minutes}`;
         }
-        
-        // 检查日期相关问题
         if (dateQuestions.includes(standardMessage)) {
             const now = new Date();
             const weekDays = ['日', '一', '二', '三', '四', '五', '六'];
             return `今天是 ${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日 星期${weekDays[now.getDay()]}`;
         }
-
-        // 如果没有匹配的快速回复，返回 null
         return null;
     }
 
     // 添加AI回复内容替换功能
     function replaceAIResponse(response) {
-        // 替换规则
         const replacements = [
             {
-                // DeepSeek相关的任何回复都替换
                 pattern: /.*DeepSeek.*/g,
                 replacement: '您好！我是SMT-AI智能助手SAI。如您有任何任何问题，我会尽我所能为您提供帮助。'
             },
             {
-                // OpenAI相关的任何回复都替换
                 pattern: /.*OpenAI.*/g,
                 replacement: '你好！我是SMT-AI大模型V3，专门设计用来提供信息、解答问题、协助学习和执行各种任务。我可以帮助用户获取知识、解决问题、进行语言翻译、提供建议等。我的目标是使信息获取更加便捷，帮助用户更高效地完成任务。如果你有任何问题或需要帮助，随时可以问我！'
             }
         ];
-
         let modifiedResponse = response;
         replacements.forEach(rule => {
             modifiedResponse = modifiedResponse.replace(rule.pattern, rule.replacement);
         });
-
         return modifiedResponse;
     }
 
-    // 显示思考时间的函数
+    // 显示思考时间
     function showThinkingTime(milliseconds) {
         const seconds = (milliseconds / 1000).toFixed(2);
         const lastMessage = chatMessages.lastElementChild;
         if (lastMessage && lastMessage.classList.contains('ai-message')) {
-            // 移除之前的思考时间显示（如果存在）
             const prevTimeDisplay = document.querySelector('.thinking-duration');
-            if (prevTimeDisplay) {
-                prevTimeDisplay.remove();
-            }
-
+            if (prevTimeDisplay) prevTimeDisplay.remove();
             const timeDisplay = document.createElement('div');
             timeDisplay.className = 'thinking-duration';
             timeDisplay.textContent = `思考用时：${seconds}秒`;
@@ -302,101 +535,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 display: block;
                 width: 100%;
             `;
-            
             lastMessage.parentNode.insertBefore(timeDisplay, lastMessage.nextSibling);
         }
     }
 
-    // 修改发送消息的处理
-    async function addMessage(content, isUser = false) {
-        const messageDiv = document.createElement('div');
-        messageDiv.className = `message ${isUser ? 'user-message' : 'ai-message'}`;
-        messageDiv.innerHTML = `
-            <div class="message-content">
-                <p>${content}</p>
-            </div>
-        `;
-        chatMessages.appendChild(messageDiv);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-        
-        // 保存消息到当前对话
-        currentChat.messages.push({
-            type: isUser ? 'user' : 'ai',
-            content: content
-        });
-
-        // 如果是用户消息，开始计时
-        if (isUser) {
-            thinkingStartTime = Date.now();
-        }
-
-        // 检查是否触发彩蛋
-        if (isUser && content.trim().toUpperCase() === 'SMT') {
-            showEasterEgg();
-            return;
-        }
-
-        // 如果是用户消息，检查是否有快速回复
-        if (isUser) {
-            const quickResponse = getQuickResponse(content);
-            if (quickResponse) {
-                setTimeout(() => {
-                    addMessage(quickResponse, false);
-                    // 显示思考时间
-                    showThinkingTime(Date.now() - thinkingStartTime);
-                }, 500);
-            } else {
-                await getAIResponse(content);
-            }
-        }
-    }
-
-    // 彩蛋展示函数
-    function showEasterEgg() {
-        const easterEgg = document.createElement('div');
-        easterEgg.style.cssText = `
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            pointer-events: none;
-            z-index: 9999;
-        `;
-
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes floatCandy {
-                0% {
-                    transform: translateY(0) rotate(0deg);
-                }
-                50% {
-                    transform: translateY(-20px) rotate(180deg);
-                }
-                100% {
-                    transform: translateY(0) rotate(360deg);
-                }
-            }
-        `;
-        document.head.appendChild(style);
-
-        const candy = document.createElement('span');
-        candy.textContent = '🍬';
-        candy.style.cssText = `
-            font-size: 50px;
-            display: inline-block;
-            animation: floatCandy 2s ease-in-out infinite;
-        `;
-        
-        easterEgg.appendChild(candy);
-        document.body.appendChild(easterEgg);
-
-        setTimeout(() => {
-            document.body.removeChild(easterEgg);
-            document.head.removeChild(style);
-        }, 3000);
-    }
-
-    // 修改AI API调用函数
+    // 使用 fetch API 流式获取 AI 回复
     async function getAIResponse(userInput) {
         const tempAiMessage = document.createElement('div');
         tempAiMessage.className = 'message ai-message';
@@ -407,23 +550,29 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
         chatMessages.appendChild(tempAiMessage);
 
-        // 如果启用了上下文模式，合并上一条消息
         let finalUserInput = userInput;
-        if (contextMode && lastUserMessage) {
-            finalUserInput = `${lastUserMessage}，${userInput}`;
+        if (contextMode) {
+            const recentMessages = currentChat.messages.slice(-4);
+            if (recentMessages.length > 0) {
+                const historyText = recentMessages
+                    .map(msg => (msg.type === 'user' ? '用户' : 'AI') + '：' + msg.content)
+                    .join('。');
+                finalUserInput = `上文：${historyText}。本次：${userInput}`;
+            }
         }
         lastUserMessage = userInput;
-
-        const data = {
-            model: "deepseek-chat",
-            messages: [
-                { "role": "system", "content": "You are a helpful assistant." },
-                { "role": "user", "content": finalUserInput }
-            ],
-            stream: true
-        };
+        let thinkingStartTime = Date.now();
 
         try {
+            const data = {
+                model: "deepseek-chat",
+                messages: [
+                    { role: "system", content: "You are a helpful assistant." },
+                    { role: "user", content: finalUserInput }
+                ],
+                stream: true
+            };
+
             const response = await fetch(apiUrl, {
                 method: 'POST',
                 headers: {
@@ -432,35 +581,26 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 body: JSON.stringify(data)
             });
-
             if (!response.ok) {
                 throw new Error(`HTTP error! 状态码: ${response.status}`);
             }
-
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
             let aiResponseText = "";
-            let isFirstChunk = true;
-
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
-
-                const chunk = decoder.decode(value, { stream: true });
-                const lines = chunk.split("\n");
+            let done = false;
+            while (!done) {
+                const { value, done: doneReading } = await reader.read();
+                done = doneReading;
+                const chunkValue = decoder.decode(value, { stream: true });
+                const lines = chunkValue.split("\n");
                 for (const line of lines) {
-                    if (line.trim() === "" || line.includes("keep-alive")) {
-                        continue;
-                    }
-
+                    if (line.trim() === "" || line.includes("keep-alive")) continue;
                     try {
                         const json = JSON.parse(line.replace("data: ", "").trim());
                         if (json.choices && json.choices[0] && json.choices[0].delta) {
                             const newText = json.choices[0].delta.content || "";
                             aiResponseText += newText;
                             const modifiedResponse = replaceAIResponse(aiResponseText);
-                            
-                            // 只有在收到实际回复内容时才更新消息
                             if (modifiedResponse.trim() !== "") {
                                 tempAiMessage.innerHTML = `
                                     <div class="message-content">
@@ -475,30 +615,99 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
 
-            const finalResponse = replaceAIResponse(aiResponseText);
-            
-            // 保存AI回复到当前对话
-            currentChat.messages.push({
-                type: 'ai',
-                content: finalResponse
-            });
+            // 如果开启了完美回答模式，进行二次审阅
+            if (perfectAnswerMode) {
+                const reviewPrompt = `请对以下AI回答进行全面审阅和优化：
 
-            // 只在完整回复后显示思考时间
-            if (finalResponse.trim() !== "") {
-                showThinkingTime(Date.now() - thinkingStartTime);
+原始回答：
+${aiResponseText}
+
+要求：
+1. 检查内容的准确性和完整性
+2. 优化文字表达，使其更加清晰易懂
+3. 改进段落结构和排版格式
+4. 添加适当的分点或分段
+5. 确保专业术语使用准确
+
+请按照以上要求提供优化后的完整回答。`;
+                tempAiMessage.innerHTML = `
+                    <div class="message-content">
+                        <p>正在优化回答 <span class="candy-loading">🍬</span></p>
+                    </div>
+                `;
+                const reviewData = {
+                    model: "deepseek-chat",
+                    messages: [
+                        { role: "system", content: "You are a helpful assistant." },
+                        { role: "user", content: reviewPrompt }
+                    ],
+                    stream: false
+                };
+                const reviewResponse = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify(reviewData)
+                });
+                if (!reviewResponse.ok) {
+                    throw new Error(`HTTP error! 状态码: ${reviewResponse.status}`);
+                }
+                let reviewedText = await reviewResponse.text();
+                const finalResponse = replaceAIResponse(reviewedText);
+                aiResponseText = finalResponse;
+                tempAiMessage.innerHTML = `
+                    <div class="message-content">
+                        <p>${finalResponse}</p>
+                    </div>
+                `;
             }
 
-            // 保存到localStorage
+            currentChat.messages.push({
+                type: 'ai',
+                content: replaceAIResponse(aiResponseText)
+            });
             saveChatsToStorage();
-
+            showThinkingTime(Date.now() - thinkingStartTime);
         } catch (error) {
-            console.error('发生错误:', error);
+            console.error('[错误] AI响应失败:', error);
+            console.log('[调试] 错误类型:', error.name);
+            console.log('[调试] 错误信息:', error.message);
+            console.log('[调试] 错误栈:', error.stack);
+            let errorMessage = '服务器繁忙请稍后再试';
+            if (error.name === 'AbortError') {
+                errorMessage = '请求超时，请检查网络连接';
+            } else if (error.message.includes('401')) {
+                errorMessage = 'API密钥无效，请检查配置';
+            } else if (error.message.includes('429')) {
+                errorMessage = '请求过于频繁，请稍后再试';
+            }
             tempAiMessage.innerHTML = `
                 <div class="message-content">
-                    <p>抱歉，服务器繁忙请稍后再试。如有问题请联系：qqnlrwzcb@163.com</p>
+                    <p>${errorMessage}</p>
+                    <div style="font-size:12px;color:#999;margin-top:8px">
+                        原始错误：${error.message || '未知错误'}
+                    </div>
+                    <p style="font-size: 12px; color: #999;margin-top:8px">
+                        如有问题请联系：qqnlrwzcb@163.com
+                    </p>
                 </div>
             `;
-            // 显示错误时的思考时间
+            const retryButton = document.createElement('button');
+            retryButton.textContent = '点击重试';
+            retryButton.style.cssText = `
+                margin-top: 10px;
+                padding: 5px 15px;
+                background: #FFB6C1;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+            `;
+            retryButton.onclick = () => {
+                getAIResponse(userInput);
+            };
+            tempAiMessage.querySelector('.message-content').appendChild(retryButton);
             showThinkingTime(Date.now() - thinkingStartTime);
         }
     }
@@ -511,39 +720,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // 初始化按钮事件 - 使用更直接的方式
-    function setupActionButtons() {
-        // 定义按钮配置
-        const buttons = [
-            { selector: '.ai-search', text: '帮我搜索' },
-            { selector: '.ai-write', text: '帮我写作' },
-            { selector: '.ai-read', text: '帮我阅读' },
-            { selector: '.ai-code', text: '帮我编程' },
-            { selector: '.ai-browse', text: '帮我浏览' }
-        ];
+    newChatButton.addEventListener('click', () => {
+        console.log('[调试] 点击新建聊天按钮');
+        createNewChat();
+    });
 
-        // 为每个按钮添加事件监听
-        buttons.forEach(({ selector, text }) => {
-            const button = document.querySelector(selector);
-            console.log(`查找按钮 ${selector}:`, !!button); // 调试信息
-
-            if (button) {
-                button.addEventListener('click', function() {
-                    console.log(`点击了按钮: ${text}`); // 调试信息
-                    if (messageInput) {
-                        messageInput.value = text + '：';
-                        messageInput.focus();
-                        console.log('设置输入框内容为:', messageInput.value); // 调试信息
-                    } else {
-                        console.error('找不到输入框元素！');
-                    }
-                });
-            } else {
-                console.error(`找不到按钮: ${selector}`);
-            }
+    if (messageInput) {
+        messageInput.addEventListener('input', () => {
+            console.log('[调试] 输入框内容变化:', messageInput.value);
         });
     }
-
-    // 在页面加载完成后设置按钮
-    setupActionButtons();
-}); 
+});
