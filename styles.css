@@ -107,19 +107,27 @@ body {
 }
 
 .input-container {
-    background-color: #fff;
     border: 1px solid #e0e0e0;
     border-radius: 12px;
-    padding: 10px;
+    padding: 12px;
+    transition: border-color 0.3s ease;
 }
 
-textarea {
+.input-container:focus-within {
+    border-color: #ff69b4;
+    box-shadow: 0 0 5px rgba(255, 105, 180, 0.3);
+}
+
+#messageInput {
     width: 100%;
     border: none;
-    resize: none;
     outline: none;
+    resize: none;
+    min-height: 24px;
     font-size: 14px;
-    padding: 5px;
+    line-height: 1.5;
+    padding: 0;
+    margin: 0;
 }
 
 .input-buttons {
