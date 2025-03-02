@@ -437,7 +437,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // 初始化按钮事件
     function setupActionButtons() {
         const menuItems = document.querySelectorAll('.menu-item');
+        const quickActionButtons = document.querySelectorAll('.quick-actions .action-button');
+        
         console.log('[调试] 找到的菜单项数量:', menuItems.length);
+        
+        // 设置菜单项点击事件
         menuItems.forEach((item, index) => {
             console.log(`[调试] 处理第${index + 1}个菜单项:`, item.outerHTML);
             const prompt = item.getAttribute('data-prompt');
@@ -449,6 +453,46 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (messageInput) {
                     messageInput.value = prompt;
                     messageInput.focus();
+                }
+            });
+        });
+
+        // 设置快捷功能区按钮点击事件
+        quickActionButtons.forEach((button, index) => {
+            button.addEventListener('click', () => {
+                switch (index) {
+                    case 0: // 问题反馈
+                        const feedbackMessage = document.createElement('div');
+                        feedbackMessage.className = 'message ai-message';
+                        feedbackMessage.innerHTML = `
+                            <div class="message-content">
+                                <p>问题反馈</p>
+                                <div style="font-size:12px;color:#999;margin-top:8px">
+                                    很抱歉给您带来不便，如有问题或建议请反馈！
+                                </div>
+                                <p style="font-size: 12px; color: #999;margin-top:8px">
+                                    请联系：qqnlrwzcb@163.com
+                                </p>
+                            </div>
+                        `;
+                        chatMessages.appendChild(feedbackMessage);
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                        
+                        // 添加到当前聊天记录
+                        currentChat.messages.push({
+                            type: 'ai',
+                            content: feedbackMessage.innerHTML
+                        });
+                        break;
+                    case 1: // V3大模型
+                        addMessage('你好我是SMT-AI，基于V3大模型开发的Ai对话智能体！', false, true);
+                        break;
+                    case 2: // 有彩蛋
+                        createCandyHeart();
+                        break;
+                    case 3: // SMT更多作品
+                        window.location.href = 'https://smtchat.netlify.app/';
+                        break;
                 }
             });
         });
