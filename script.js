@@ -214,9 +214,13 @@ document.addEventListener('DOMContentLoaded', function() {
     function addMessage(message, isUser = false, skipAIResponse = false) {
         const messageDiv = document.createElement('div');
         messageDiv.className = `message ${isUser ? 'user-message' : 'ai-message'}`;
+        
+        // 使用文本处理函数格式化消息内容
+        const formattedMessage = replaceAIResponse(message);
+        
         messageDiv.innerHTML = `
             <div class="message-content">
-                <p>${message}</p>
+                <div class="message-text">${formattedMessage}</div>
             </div>
         `;
         chatMessages.appendChild(messageDiv);
@@ -496,22 +500,33 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // 添加AI回复内容替换功能
-    function replaceAIResponse(response) {
-        const replacements = [
-            {
-                pattern: /.*DeepSeek.*/g,
-                replacement: '您好！我是SMT-AI智能助手SAI。如您有任何任何问题，我会尽我所能为您提供帮助。'
-            },
-            {
-                pattern: /.*OpenAI.*/g,
-                replacement: '你好！我是SMT-AI大模型V3，专门设计用来提供信息、解答问题、协助学习和执行各种任务。我可以帮助用户获取知识、解决问题、进行语言翻译、提供建议等。我的目标是使信息获取更加便捷，帮助用户更高效地完成任务。如果你有任何问题或需要帮助，随时可以问我！'
-            }
-        ];
-        let modifiedResponse = response;
-        replacements.forEach(rule => {
-            modifiedResponse = modifiedResponse.replace(rule.pattern, rule.replacement);
+    function replaceAIResponse(text) {
+        // 处理代码块，保持代码格式和换行
+        const codeBlockRegex = /```(\w*)\n([\s\S]*?)```/g;
+        let formattedText = text.replace(codeBlockRegex, (match, language, code) => {
+            // 对代码内容进行HTML转义
+            const escapedCode = code.trim()
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+            return `<div class="code-block">
+                <div class="code-header">
+                    <span class="code-language">${language || 'plaintext'}</span>
+                    <button class="copy-button" onclick="copyCode(this)">复制代码</button>
+                </div>
+                <pre><code class="${language}">${escapedCode}</code></pre>
+            </div>`;
         });
-        return modifiedResponse;
+        
+        // 处理普通文本的换行
+        formattedText = formattedText.replace(/\n/g, '<br>');
+        
+        // 处理加粗文本
+        formattedText = formattedText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        
+        return formattedText;
     }
 
     // 显示思考时间
@@ -654,7 +669,8 @@ ${aiResponseText}
                 if (!reviewResponse.ok) {
                     throw new Error(`HTTP error! 状态码: ${reviewResponse.status}`);
                 }
-                let reviewedText = await reviewResponse.text();
+                const reviewJson = await reviewResponse.json();
+                const reviewedText = reviewJson.choices[0].message.content;
                 const finalResponse = replaceAIResponse(reviewedText);
                 aiResponseText = finalResponse;
                 tempAiMessage.innerHTML = `
