@@ -210,27 +210,23 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // 添加自动滚动函数
-    function scrollToBottom(smooth = true) {
-        chatMessages.scrollTo({
-            top: chatMessages.scrollHeight,
-            behavior: smooth ? 'smooth' : 'auto'
-        });
-    }
-
-    // 修改addMessage函数，添加自动滚动
+    // 添加消息到聊天界面
     function addMessage(message, isUser = false, skipAIResponse = false) {
         const messageDiv = document.createElement('div');
         messageDiv.className = `message ${isUser ? 'user-message' : 'ai-message'}`;
+        
+        // 使用文本处理函数格式化消息内容
+        const formattedMessage = replaceAIResponse(message);
+        
         messageDiv.innerHTML = `
             <div class="message-content">
-                <p>${message}</p>
+                <div class="message-text">${formattedMessage}</div>
             </div>
         `;
         chatMessages.appendChild(messageDiv);
         
-        // 使用平滑滚动
-        scrollToBottom(true);
+        // 滚动到底部
+        chatMessages.scrollTop = chatMessages.scrollHeight;
         
         // 添加到当前聊天记录
         currentChat.messages.push({
@@ -260,20 +256,29 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         .candy-heart {
             position: absolute;
-            font-size: 40px;
-            animation: candyFloat 2s ease-in-out infinite, fadeInOut 2s ease-in-out;
+            font-size: 45px;
             transform-origin: center;
         }
-        @keyframes fadeInOut {
-            0% { opacity: 0; transform: scale(0.5) translateY(0); }
-            10% { opacity: 1; transform: scale(1) translateY(0); }
-            90% { opacity: 1; transform: scale(1) translateY(0); }
-            100% { opacity: 0; transform: scale(0.5) translateY(0); }
-        }
         @keyframes candyFloat {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            25% { transform: translateY(-5px) rotate(3deg); }
-            75% { transform: translateY(5px) rotate(-3deg); }
+            0% { 
+                opacity: 0;
+                transform: translateY(10px) rotate(0deg) scale(0.5); 
+            }
+            10% {
+                opacity: 1;
+                transform: translateY(0) rotate(5deg) scale(1);
+            }
+            50% { 
+                transform: translateY(-15px) rotate(-5deg) scale(1.1);
+            }
+            90% {
+                opacity: 1;
+                transform: translateY(0) rotate(5deg) scale(1);
+            }
+            100% { 
+                opacity: 0;
+                transform: translateY(10px) rotate(0deg) scale(0.5); 
+            }
         }
     `;
     document.head.appendChild(style);
@@ -287,7 +292,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // 优化的心形坐标
         const heartCoords = [
             // 顶部
-            {x: 0, y: -2},
+            {x: 0, y: -2.2},
             // 左上弧
             {x: -2, y: -3},
             {x: -3, y: -2},
@@ -312,9 +317,10 @@ document.addEventListener('DOMContentLoaded', function() {
             candy.style.left = coord.x * 40 + 'px';
             candy.style.top = coord.y * 40 + 'px';
             
-            // 添加随机动画延迟
-            const randomDelay = Math.random() * 0.5;
-            candy.style.animationDelay = `${randomDelay}s, 0s`;
+            // 添加随机动画延迟和持续时间
+            const randomDelay = Math.random() * 0.8;
+            const randomDuration = 2.5 + Math.random() * 1;
+            candy.style.animation = `candyFloat ${randomDuration}s ease-in-out ${randomDelay}s infinite`;
             
             container.appendChild(candy);
         });
@@ -327,7 +333,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 setTimeout(() => {
                     container.remove();
                 }, 500);
-            }, 1500);
+            }, 2000);
         });
     }
 
@@ -344,8 +350,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (message) {
             console.log('[调试] 发送消息:', message);
             
-            // 检查是否触发彩蛋
-            if (message.toUpperCase().includes('SMT')) {
+            // 检查是否触发彩蛋（匹配SMT或SMTAI，不区分大小写）
+            const upperMessage = message.trim().toUpperCase();
+            if (upperMessage === 'SMT' || upperMessage === 'SMTAI') {
                 createCandyHeart();
             }
             
@@ -430,7 +437,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // 初始化按钮事件
     function setupActionButtons() {
         const menuItems = document.querySelectorAll('.menu-item');
+        const quickActionButtons = document.querySelectorAll('.quick-actions .action-button');
+        
         console.log('[调试] 找到的菜单项数量:', menuItems.length);
+        
+        // 设置菜单项点击事件
         menuItems.forEach((item, index) => {
             console.log(`[调试] 处理第${index + 1}个菜单项:`, item.outerHTML);
             const prompt = item.getAttribute('data-prompt');
@@ -445,6 +456,46 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         });
+
+        // 设置快捷功能区按钮点击事件
+        quickActionButtons.forEach((button, index) => {
+            button.addEventListener('click', () => {
+                switch (index) {
+                    case 0: // 问题反馈
+                        const feedbackMessage = document.createElement('div');
+                        feedbackMessage.className = 'message ai-message';
+                        feedbackMessage.innerHTML = `
+                            <div class="message-content">
+                                <p>问题反馈</p>
+                                <div style="font-size:12px;color:#999;margin-top:8px">
+                                    很抱歉给您带来不便，如有问题或建议请反馈！
+                                </div>
+                                <p style="font-size: 12px; color: #999;margin-top:8px">
+                                    请联系：qqnlrwzcb@163.com
+                                </p>
+                            </div>
+                        `;
+                        chatMessages.appendChild(feedbackMessage);
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                        
+                        // 添加到当前聊天记录
+                        currentChat.messages.push({
+                            type: 'ai',
+                            content: feedbackMessage.innerHTML
+                        });
+                        break;
+                    case 1: // V3大模型
+                        addMessage('你好我是SMT-AI，基于V3大模型开发的Ai对话智能体！', false, true);
+                        break;
+                    case 2: // 有彩蛋
+                        createCandyHeart();
+                        break;
+                    case 3: // SMT更多作品
+                        window.location.href = 'https://smtchat.netlify.app/';
+                        break;
+                }
+            });
+        });
     }
 
     // 加载保存的聊天记录
@@ -456,11 +507,27 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 添加快速回复功能
     function getQuickResponse(message) {
-        const standardMessage = message.trim().toLowerCase();
+        const standardMessage = message.trim();
         const timeQuestions = ['几点了', '现在是几点', '现在的时间', '时间'];
-        const dateQuestions = ['今天是星期几', '今天几号', '星期几', '几号'];
+        const dateQuestions = ['今天是星期几', '今天几号', '星期几', '日期'];
         
         console.log('[调试] 检查快速回复:', standardMessage);
+        
+        // SMTAI的随机回复
+        const smtaiResponses = [
+            '您好！我是SMT-AI智能助手SAI。如您有任何任何问题，我会尽我所能为您提供帮助。',
+            '你好！我是SMT-AI大模型V3，专门设计用来提供信息、解答问题、协助学习和执行各种任务。我可以帮助用户获取知识、解决问题、进行语言翻译、提供建议等。我的目标是使信息获取更加便捷，帮助用户更高效地完成任务。如果你有任何问题或需要帮助，随时可以问我！'
+        ];
+        
+        // 添加SMTAI的快捷回复（完全匹配，不区分大小写）
+        if (standardMessage.toUpperCase() === 'SMTAI') {
+            return smtaiResponses[Math.floor(Math.random() * smtaiResponses.length)];
+        }
+        
+        // 添加SMT彩蛋的快捷回复（匹配SMT，不区分大小写）
+        if (standardMessage.toUpperCase() === 'SMT') {
+            return '爱心💗🍬送给你，继续和V3大模型的SMTAI聊天吧～';
+        }
         
         if (timeQuestions.includes(standardMessage)) {
             const now = new Date();
@@ -477,22 +544,33 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // 添加AI回复内容替换功能
-    function replaceAIResponse(response) {
-        const replacements = [
-            {
-                pattern: /.*DeepSeek.*/g,
-                replacement: '您好！我是SMT-AI智能助手SAI。如您有任何任何问题，我会尽我所能为您提供帮助。'
-            },
-            {
-                pattern: /.*OpenAI.*/g,
-                replacement: '你好！我是SMT-AI大模型V3，专门设计用来提供信息、解答问题、协助学习和执行各种任务。我可以帮助用户获取知识、解决问题、进行语言翻译、提供建议等。我的目标是使信息获取更加便捷，帮助用户更高效地完成任务。如果你有任何问题或需要帮助，随时可以问我！'
-            }
-        ];
-        let modifiedResponse = response;
-        replacements.forEach(rule => {
-            modifiedResponse = modifiedResponse.replace(rule.pattern, rule.replacement);
+    function replaceAIResponse(text) {
+        // 处理代码块，保持代码格式和换行
+        const codeBlockRegex = /```(\w*)\n([\s\S]*?)```/g;
+        let formattedText = text.replace(codeBlockRegex, (match, language, code) => {
+            // 对代码内容进行HTML转义
+            const escapedCode = code.trim()
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+            return `<div class="code-block">
+                <div class="code-header">
+                    <span class="code-language">${language || 'plaintext'}</span>
+                    <button class="copy-button" onclick="copyCode(this)">复制代码</button>
+                </div>
+                <pre><code class="${language}">${escapedCode}</code></pre>
+            </div>`;
         });
-        return modifiedResponse;
+        
+        // 处理普通文本的换行
+        formattedText = formattedText.replace(/\n/g, '<br>');
+        
+        // 处理加粗文本
+        formattedText = formattedText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        
+        return formattedText;
     }
 
     // 显示思考时间
@@ -530,8 +608,6 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
         `;
         chatMessages.appendChild(tempAiMessage);
-        // 添加自动滚动
-        chatMessages.scrollTop = chatMessages.scrollHeight;
 
         let finalUserInput = userInput;
         if (contextMode) {
@@ -590,11 +666,8 @@ document.addEventListener('DOMContentLoaded', function() {
                                         <p>${modifiedResponse}</p>
                                     </div>
                                 `;
-                                // 添加平滑滚动
-                                chatMessages.scrollTo({
-                                    top: chatMessages.scrollHeight,
-                                    behavior: 'smooth'
-                                });
+                                // 自动滚动到最新消息
+                                chatMessages.scrollTop = chatMessages.scrollHeight;
                             }
                         }
                     } catch (e) {
@@ -642,7 +715,8 @@ ${aiResponseText}
                 if (!reviewResponse.ok) {
                     throw new Error(`HTTP error! 状态码: ${reviewResponse.status}`);
                 }
-                let reviewedText = await reviewResponse.text();
+                const reviewJson = await reviewResponse.json();
+                const reviewedText = reviewJson.choices[0].message.content;
                 const finalResponse = replaceAIResponse(reviewedText);
                 aiResponseText = finalResponse;
                 tempAiMessage.innerHTML = `

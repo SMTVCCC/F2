@@ -2,24 +2,13 @@
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <title>SMT-AI对话助手</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="code-styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="apple-touch-icon" href="IOS.png"/>
-    <script>
-        // 设备检测和适配
-        function checkDevice() {
-            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-            if (isMobile) {
-                document.documentElement.style.fontSize = window.innerWidth / 30 + 'px';
-            }
-        }
-        window.addEventListener('load', checkDevice);
-        window.addEventListener('resize', checkDevice);
-    </script>
     <style>
         .logo {
             width: 80px;
@@ -220,10 +209,10 @@
             width: 80px;
             padding: 15px 10px;
         }
-        .sidebar.collapsed .menu-items,
         .sidebar.collapsed .chat-history,
         .sidebar.collapsed .clear-history,
-        .sidebar.collapsed .user-info span {
+        .sidebar.collapsed .user-info span,
+        .sidebar.collapsed .menu-item span {
             display: none;
         }
         .sidebar.collapsed .logo {
@@ -253,6 +242,13 @@
         .sidebar.collapsed .new-chat {
             padding: 8px;
             justify-content: center;
+        }
+        .sidebar.collapsed .menu-items {
+            align-items: center;
+        }
+        .sidebar.collapsed .menu-item {
+            justify-content: center;
+            padding: 10px 0;
         }
         .sidebar.collapsed .new-chat span {
             display: none;
