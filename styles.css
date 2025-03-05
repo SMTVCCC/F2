@@ -246,3 +246,95 @@ body {
 .action-button i {
     font-size: 16px;
 }
+
+/* 移动端适配样式 */
+@media screen and (max-width: 768px) {
+    .chat-container {
+        position: relative;
+    }
+
+    .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        z-index: 1000;
+        transform: translateX(0);
+        transition: transform 0.3s ease;
+    }
+
+    .sidebar.collapsed {
+        transform: translateX(-100%);
+    }
+
+    .main-content {
+        margin-left: 0;
+        width: 100%;
+    }
+
+    .menu-toggle {
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        z-index: 1001;
+        background: none;
+        border: none;
+        color: #666;
+        font-size: 24px;
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 4px;
+        background-color: rgba(255, 255, 255, 0.9);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .message {
+        max-width: 95%;
+    }
+
+    .message-content {
+        font-size: 14px;
+        padding: 12px;
+    }
+
+    .input-area {
+        padding: 12px;
+    }
+
+    .input-container {
+        padding: 8px;
+    }
+
+    .bottom-buttons {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .model-button {
+        padding: 4px 8px;
+        font-size: 12px;
+        min-width: auto;
+    }
+
+    .action-button {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+
+    .quick-actions {
+        padding: 12px;
+        gap: 8px;
+    }
+
+    /* 优化触摸交互 */
+    .chat-messages {
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .copy-button,
+    .tool-button,
+    .send-button {
+        min-height: 36px;
+        min-width: 36px;
+    }
+}
