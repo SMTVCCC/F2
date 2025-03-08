@@ -33,20 +33,20 @@ document.addEventListener('DOMContentLoaded', function() {
     let contextMode = false;
     let lastUserMessage = '';
 
-    // 完美回答模式配置
-    let perfectAnswerMode = false;
+    // 深度思考模式配置
+    let deepThinkingMode = false;
     if (perfectAnswerToggle) {
-        console.log('[调试] 初始化完美回答按钮');
+        console.log('[调试] 初始化深度思考按钮');
         perfectAnswerToggle.addEventListener('click', function() {
-            console.log('[调试] 点击完美回答按钮');
-            perfectAnswerMode = !perfectAnswerMode;
-            console.log('[调试] 完美回答模式:', perfectAnswerMode ? '开启' : '关闭');
+            console.log('[调试] 点击深度思考按钮');
+            deepThinkingMode = !deepThinkingMode;
+            console.log('[调试] 深度思考模式:', deepThinkingMode ? '开启' : '关闭');
             
             this.classList.toggle('active');
-            this.title = perfectAnswerMode ? '已启用完美回答' : '已关闭完美回答';
+            this.title = deepThinkingMode ? '已启用深度思考' : '已关闭深度思考';
             
             // 修改视觉反馈样式
-            if (perfectAnswerMode) {
+            if (deepThinkingMode) {
                 this.style.backgroundColor = '#FF69B4';  // 热粉色
                 this.style.color = 'white';
                 this.style.borderColor = '#FF69B4';
@@ -61,13 +61,13 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             // 触发一个自定义事件，用于调试
-            const event = new CustomEvent('perfectAnswerModeChange', { 
-                detail: { enabled: perfectAnswerMode } 
+            const event = new CustomEvent('deepThinkingModeChange', { 
+                detail: { enabled: deepThinkingMode } 
             });
             document.dispatchEvent(event);
         });
     } else {
-        console.error('[错误] 未找到完美回答按钮元素');
+        console.error('[错误] 未找到深度思考按钮元素');
     }
 
     // 存储所有对话历史
@@ -485,7 +485,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         });
                         break;
                     case 1: // V3大模型
-                        addMessage('你好我是SMT-AI，基于V3大模型开发的Ai对话智能体！', false, true);
+                        addMessage('你好我是SMT-AI，满血版Deepseek（R1）大模型开发的Ai对话智能体！', false, true);
                         break;
                     case 2: // 有彩蛋
                         createCandyHeart();
@@ -624,7 +624,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         try {
             const data = {
-                model: "deepseek-chat",
+                model: deepThinkingMode ? "deepseek-reasoner" : "deepseek-chat",
                 messages: [
                     { role: "system", content: "You are a helpful assistant." },
                     { role: "user", content: finalUserInput }
@@ -676,54 +676,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
 
-            // 如果开启了完美回答模式，进行二次审阅
-            if (perfectAnswerMode) {
-                const reviewPrompt = `请对以下AI回答进行全面审阅和优化：
-
-原始回答：
-${aiResponseText}
-
-要求：
-1. 检查内容的准确性和完整性
-2. 优化文字表达，使其更加清晰易懂
-3. 改进段落结构和排版格式
-4. 添加适当的分点或分段
-5. 确保专业术语使用准确
-
-请按照以上要求提供优化后的完整回答。`;
-                tempAiMessage.innerHTML = `
-                    <div class="message-content">
-                        <p>正在优化回答 <span class="candy-loading">🍬</span></p>
-                    </div>
-                `;
-                const reviewData = {
-                    model: "deepseek-chat",
-                    messages: [
-                        { role: "system", content: "You are a helpful assistant." },
-                        { role: "user", content: reviewPrompt }
-                    ],
-                    stream: false
-                };
-                const reviewResponse = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${apiKey}`
-                    },
-                    body: JSON.stringify(reviewData)
-                });
-                if (!reviewResponse.ok) {
-                    throw new Error(`HTTP error! 状态码: ${reviewResponse.status}`);
-                }
-                const reviewJson = await reviewResponse.json();
-                const reviewedText = reviewJson.choices[0].message.content;
-                const finalResponse = replaceAIResponse(reviewedText);
-                aiResponseText = finalResponse;
-                tempAiMessage.innerHTML = `
-                    <div class="message-content">
-                        <p>${finalResponse}</p>
-                    </div>
-                `;
+            // 如果开启了深度思考模式，进行二次审阅
+            if (deepThinkingMode) {
+                // 不需要进行二次审阅，因为已经使用了deepseek-reasoner模型
+                // 这里可以添加一些视觉反馈，表明使用了深度思考模式
+                tempAiMessage.querySelector('.message-content p').innerHTML += `<small class="model-tag">深度思考模式</small>`;
             }
 
             currentChat.messages.push({

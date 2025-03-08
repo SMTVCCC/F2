@@ -11,6 +11,7 @@ const MobileAdapter = {
             this.applyMobileStyles();
             this.setupMobileLayout();
             this.setupTouchEvents();
+            this.handleSidebarToggle();
         }
     },
 
@@ -22,19 +23,22 @@ const MobileAdapter = {
         const mobileStyles = `
             .mobile-device .sidebar {
                 position: fixed;
-                left: -280px;
+                left: 0;
                 top: 0;
                 bottom: 0;
                 z-index: 1000;
-                transition: left 0.3s ease;
+                transition: all 0.3s ease;
+                box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
             }
 
-            .mobile-device .sidebar.show {
-                left: 0;
+            .mobile-device .sidebar.collapsed {
+                left: -240px;
+                box-shadow: none;
             }
 
             .mobile-device .main-content {
                 margin-left: 0;
+                width: 100%;
             }
 
             .mobile-device .chat-messages {
@@ -82,23 +86,16 @@ const MobileAdapter = {
                 font-size: 12px;
             }
 
+            /* 隐藏原有菜单切换按钮的样式，使用我们的CSS来控制 */
             .mobile-device .menu-toggle {
-                display: block;
-                position: fixed;
-                top: 10px;
-                left: 10px;
-                z-index: 1001;
-                background: #FFB6C1;
-                color: white;
-                border: none;
-                border-radius: 50%;
-                width: 40px;
-                height: 40px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                cursor: pointer;
-                box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+                display: none !important;
+            }
+            
+            /* 确保移动端菜单按钮可见 */
+            .mobile-device .toggle-sidebar {
+                display: flex !important;
+                opacity: 1 !important;
+                visibility: visible !important;
             }
         `;
 
@@ -109,12 +106,6 @@ const MobileAdapter = {
 
     // 设置移动端布局
     setupMobileLayout() {
-        // 创建菜单切换按钮
-        const menuToggle = document.createElement('button');
-        menuToggle.className = 'menu-toggle';
-        menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
-        document.body.appendChild(menuToggle);
-
         // 添加遮罩层
         const overlay = document.createElement('div');
         overlay.className = 'mobile-overlay';
@@ -140,21 +131,40 @@ const MobileAdapter = {
         styleSheet.textContent = overlayStyles;
         document.head.appendChild(styleSheet);
 
-        // 绑定菜单切换事件
-        menuToggle.addEventListener('click', () => {
-            const sidebar = document.querySelector('.sidebar');
-            const overlay = document.querySelector('.mobile-overlay');
-            sidebar.classList.toggle('show');
-            overlay.classList.toggle('show');
-        });
-
         // 点击遮罩层关闭菜单
         overlay.addEventListener('click', () => {
             const sidebar = document.querySelector('.sidebar');
             const overlay = document.querySelector('.mobile-overlay');
-            sidebar.classList.remove('show');
+            sidebar.classList.add('collapsed');
             overlay.classList.remove('show');
         });
+    },
+
+    // 处理侧边栏切换按钮
+    handleSidebarToggle() {
+        const toggleButton = document.getElementById('toggleSidebar');
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.querySelector('.mobile-overlay');
+        
+        if(toggleButton) {
+            // 重设切换按钮点击事件
+            const originalClickHandler = toggleButton.onclick;
+            toggleButton.onclick = function(e) {
+                // 调用原始切换函数
+                if(originalClickHandler) {
+                    originalClickHandler.call(this, e);
+                }
+                
+                // 移动端特有的处理
+                if(MobileAdapter.isMobile()) {
+                    if(sidebar.classList.contains('collapsed')) {
+                        overlay.classList.remove('show');
+                    } else {
+                        overlay.classList.add('show');
+                    }
+                }
+            };
+        }
     },
 
     // 设置触摸事件
@@ -182,12 +192,12 @@ const MobileAdapter = {
 
         // 从左向右滑动显示菜单
         if (swipeDistance > 50 && touchStartX < 30) {
-            sidebar.classList.add('show');
+            sidebar.classList.remove('collapsed');
             overlay.classList.add('show');
         }
         // 从右向左滑动隐藏菜单
-        else if (swipeDistance < -50 && sidebar.classList.contains('show')) {
-            sidebar.classList.remove('show');
+        else if (swipeDistance < -50 && !sidebar.classList.contains('collapsed')) {
+            sidebar.classList.add('collapsed');
             overlay.classList.remove('show');
         }
     }
