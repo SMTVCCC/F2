@@ -491,7 +491,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         createCandyHeart();
                         break;
                     case 3: // SMT更多作品
-                        window.location.href = 'https://smtchat.netlify.app/';
+                        window.location.href = 'https://timelist.netlify.app/';
                         break;
                 }
             });
