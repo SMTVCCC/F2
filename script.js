@@ -153,16 +153,29 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         chatMessages.innerHTML = '';
         chat.messages.forEach(message => {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${message.type === 'user' ? 'user-message' : 'ai-message'}`;
-            messageDiv.innerHTML = `
+            const messageElement = document.createElement('div');
+            messageElement.className = `message ${message.type === 'user' ? 'user-message' : 'ai-message'}`;
+            
+            const formattedMessage = message.type === 'user' ? message.content : replaceAIResponse(message.content);
+            messageElement.innerHTML = `
                 <div class="message-content">
-                    <p>${message.content}</p>
+                    <div class="message-text">${formattedMessage}</div>
                 </div>
             `;
-            chatMessages.appendChild(messageDiv);
+            
+            chatMessages.appendChild(messageElement);
         });
+        
+        // 全部加载完成后再渲染一次数学公式
+        if (typeof MathJax !== 'undefined' && MathJax.typesetPromise) {
+            MathJax.typesetPromise([chatMessages]).catch((err) => {
+                console.error('MathJax聊天加载渲染错误:', err);
+            });
+        }
+        
         currentChat = chat;
+        // 滚动到最新消息
+        chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 
     // 保存聊天记录到localStorage
@@ -216,7 +229,7 @@ document.addEventListener('DOMContentLoaded', function() {
         messageDiv.className = `message ${isUser ? 'user-message' : 'ai-message'}`;
         
         // 使用文本处理函数格式化消息内容
-        const formattedMessage = replaceAIResponse(message);
+        const formattedMessage = isUser ? message : replaceAIResponse(message);
         
         messageDiv.innerHTML = `
             <div class="message-content">
@@ -233,6 +246,13 @@ document.addEventListener('DOMContentLoaded', function() {
             type: isUser ? 'user' : 'ai',
             content: message
         });
+        
+        // 渲染数学公式
+        if (typeof MathJax !== 'undefined' && MathJax.typesetPromise) {
+            MathJax.typesetPromise([messageDiv]).catch((err) => {
+                console.error('MathJax历史消息渲染错误:', err);
+            });
+        }
         
         // 如果是用户消息且不跳过AI响应，则获取AI响应
         if (isUser && !skipAIResponse) {
@@ -545,6 +565,25 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 添加AI回复内容替换功能
     function replaceAIResponse(text) {
+        // 保护数学公式，防止其被HTML格式化影响
+        // 先临时替换数学公式，之后再还原
+        const mathMap = new Map();
+        let mathID = 0;
+        
+        // 保护行内公式 $...$
+        text = text.replace(/\$(.+?)\$/g, (match) => {
+            const id = `MATH_INLINE_${mathID++}`;
+            mathMap.set(id, match);
+            return id;
+        });
+        
+        // 保护块级公式 $$...$$
+        text = text.replace(/\$\$([\s\S]+?)\$\$/g, (match) => {
+            const id = `MATH_BLOCK_${mathID++}`;
+            mathMap.set(id, match);
+            return id;
+        });
+        
         // 处理代码块，保持代码格式和换行
         const codeBlockRegex = /```(\w*)\n([\s\S]*?)```/g;
         let formattedText = text.replace(codeBlockRegex, (match, language, code) => {
@@ -569,6 +608,11 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // 处理加粗文本
         formattedText = formattedText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        
+        // 还原数学公式
+        mathMap.forEach((value, key) => {
+            formattedText = formattedText.replace(key, value);
+        });
         
         return formattedText;
     }
@@ -602,11 +646,26 @@ document.addEventListener('DOMContentLoaded', function() {
     async function getAIResponse(userInput) {
         const tempAiMessage = document.createElement('div');
         tempAiMessage.className = 'message ai-message';
-        tempAiMessage.innerHTML = `
-            <div class="message-content">
-                <p>思考中 <span class="candy-loading">🍬</span></p>
-            </div>
-        `;
+        
+        // 根据是否开启深度思考模式显示不同的思考提示
+        if (deepThinkingMode) {
+            tempAiMessage.innerHTML = `
+                <div class="message-content deep-thinking-message">
+                    <p>深度思考中 <span class="deep-thinking-candies">
+                        <span class="deep-thinking-candy">🍬</span>
+                        <span class="deep-thinking-candy">🍬</span>
+                        <span class="deep-thinking-candy">🍬</span>
+                    </span></p>
+                </div>
+            `;
+        } else {
+            tempAiMessage.innerHTML = `
+                <div class="message-content">
+                    <p>思考中 <span class="candy-loading">🍬</span></p>
+                </div>
+            `;
+        }
+        
         chatMessages.appendChild(tempAiMessage);
 
         let finalUserInput = userInput;
@@ -647,6 +706,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const decoder = new TextDecoder();
             let aiResponseText = "";
             let done = false;
+            
+            // 如果是深度思考模式，添加特效类
+            const messageContentClass = deepThinkingMode ? 'message-content deep-thinking-message' : 'message-content';
+            
             while (!done) {
                 const { value, done: doneReading } = await reader.read();
                 done = doneReading;
@@ -662,12 +725,19 @@ document.addEventListener('DOMContentLoaded', function() {
                             const modifiedResponse = replaceAIResponse(aiResponseText);
                             if (modifiedResponse.trim() !== "") {
                                 tempAiMessage.innerHTML = `
-                                    <div class="message-content">
+                                    <div class="${messageContentClass}">
                                         <p>${modifiedResponse}</p>
                                     </div>
                                 `;
                                 // 自动滚动到最新消息
                                 chatMessages.scrollTop = chatMessages.scrollHeight;
+                                
+                                // 触发MathJax重新渲染
+                                if (typeof MathJax !== 'undefined' && MathJax.typesetPromise) {
+                                    MathJax.typesetPromise([tempAiMessage]).catch((err) => {
+                                        console.error('MathJax渲染错误:', err);
+                                    });
+                                }
                             }
                         }
                     } catch (e) {
@@ -676,11 +746,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
 
-            // 如果开启了深度思考模式，进行二次审阅
+            // 如果开启了深度思考模式，添加标签
             if (deepThinkingMode) {
-                // 不需要进行二次审阅，因为已经使用了deepseek-reasoner模型
-                // 这里可以添加一些视觉反馈，表明使用了深度思考模式
-                tempAiMessage.querySelector('.message-content p').innerHTML += `<small class="model-tag">深度思考模式</small>`;
+                tempAiMessage.querySelector('.message-content p').innerHTML += `<small class="model-tag deep-thinking">深度思考模式</small>`;
             }
 
             currentChat.messages.push({
@@ -689,6 +757,13 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             saveChatsToStorage();
             showThinkingTime(Date.now() - thinkingStartTime);
+            
+            // 整个消息加载完成后，再次触发MathJax渲染
+            if (typeof MathJax !== 'undefined' && MathJax.typesetPromise) {
+                MathJax.typesetPromise([tempAiMessage]).catch((err) => {
+                    console.error('MathJax最终渲染错误:', err);
+                });
+            }
         } catch (error) {
             console.error('[错误] AI响应失败:', error);
             console.log('[调试] 错误类型:', error.name);
@@ -702,8 +777,12 @@ document.addEventListener('DOMContentLoaded', function() {
             } else if (error.message.includes('429')) {
                 errorMessage = '请求过于频繁，请稍后再试';
             }
+            
+            // 根据是否处于深度思考模式添加不同的样式
+            const errorContentClass = deepThinkingMode ? 'message-content deep-thinking-message' : 'message-content';
+            
             tempAiMessage.innerHTML = `
-                <div class="message-content">
+                <div class="${errorContentClass}">
                     <p>${errorMessage}</p>
                     <div style="font-size:12px;color:#999;margin-top:8px">
                         原始错误：${error.message || '未知错误'}
