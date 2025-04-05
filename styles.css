@@ -602,7 +602,7 @@ body {
 }
 
 .user-message .message-content {
-    background: var(--candy-gradient);
+    background: #FFB6C1; /* 修改为纯浅粉色，而不是渐变色 */
     color: white;
     box-shadow: var(--candy-shadow);
     border-top-right-radius: 4px;
@@ -611,7 +611,8 @@ body {
 }
 
 .user-message .message-content::before {
-    content: '';
+    content: none; /* 移除伪元素效果，保持纯色背景 */
+    /* 下面的代码保留但不会生效，因为content为none */
     position: absolute;
     top: 0;
     left: 0;
@@ -1683,6 +1684,132 @@ body {
     /* 触控高亮优化 */
     * {
         -webkit-tap-highlight-color: transparent;
+    }
+
+    /* 从 mobile-adapter.js 移动过来的样式 */
+    .mobile-device .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        z-index: 1000;
+        transition: all 0.3s ease;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .mobile-device .sidebar.collapsed {
+        left: -240px;
+        box-shadow: none;
+    }
+
+    .mobile-device .main-content {
+        margin-left: 0;
+        width: 100%;
+        height: 100vh;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .mobile-device .chat-messages {
+        padding: 10px;
+        flex: 1;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .mobile-device .message {
+        max-width: 95%;
+    }
+
+    .mobile-device .message-content {
+        font-size: 14px;
+        padding: 10px;
+    }
+
+    .mobile-device .input-area {
+        padding: 10px;
+        /* 保留 sticky 行为，由 JavaScript 控制键盘弹出时的 fixed */
+        position: sticky;
+        bottom: 0;
+        background: white;
+        z-index: 10;
+        border-top: 1px solid #e0e0e0;
+    }
+
+    .mobile-device .input-container {
+        padding: 8px;
+    }
+
+    .mobile-device #messageInput {
+        font-size: 16px;
+    }
+
+    .mobile-device .bottom-buttons {
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+
+    .mobile-device .model-button {
+        font-size: 12px;
+        padding: 4px 8px;
+        min-width: 60px;
+    }
+
+    .mobile-device .code-block {
+        margin: 5px 0;
+    }
+
+    .mobile-device .code-block pre {
+        padding: 10px;
+        font-size: 12px;
+    }
+
+    /* 确保快捷功能区在移动端可见 */
+    .mobile-device .quick-actions {
+        display: flex; /* 确保显示 */
+        flex-wrap: wrap;
+        justify-content: center;
+        padding: 10px;
+        gap: 10px;
+        background: white; /* 保持背景色 */
+        border-top: 1px solid #e0e0e0; /* 添加上边框 */
+    }
+
+    /* 确保移动端菜单按钮可见 */
+    .mobile-device .toggle-sidebar {
+        display: flex !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    /* 固定整体布局 */
+    .mobile-device .chat-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        overflow: hidden;
+    }
+
+    /* 针对安卓设备的特殊处理 */
+    .android-device .chat-messages {
+        -webkit-overflow-scrolling: touch;
+        overflow-y: auto !important;
+        position: relative;
+        z-index: 1;
+    }
+
+    .android-device .input-area {
+        /* JavaScript 会在键盘弹出时设为 fixed */
+        position: sticky;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: white;
+        z-index: 2;
+        padding-bottom: env(safe-area-inset-bottom, 10px);
     }
 }
 

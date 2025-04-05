@@ -25,6 +25,40 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
 
+    // 添加自动滚动控制变量
+    let userScrolled = false;
+    let scrollTimer = null;
+
+    // 监听用户滚动事件
+    chatMessages.addEventListener('scroll', function() {
+        // 检查是否是用户主动滚动（而不是程序滚动）
+        if (chatMessages.scrollTop + chatMessages.clientHeight < chatMessages.scrollHeight - 10) {
+            userScrolled = true;
+            
+            // 清除任何现有的定时器
+            if (scrollTimer) {
+                clearTimeout(scrollTimer);
+            }
+            
+            // 设置新的定时器，2秒后重置用户滚动状态
+            scrollTimer = setTimeout(() => {
+                userScrolled = false;
+                // 如果定时器到时，尝试再次滚动到底部
+                if (!userScrolled) {
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }
+            }, 2000);
+        }
+    });
+
+    // 滚动到底部的安全函数
+    function scrollToBottom() {
+        // 只有当用户没有主动滚动时，才自动滚动到底部
+        if (!userScrolled) {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+    }
+
     // API配置
     const apiUrl = 'https://api.deepseek.com/chat/completions';
     const apiKey = 'sk-250935b3510c4978a50d340c8bbd07c5';
@@ -225,6 +259,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 添加消息到聊天界面
     function addMessage(message, isUser = false, skipAIResponse = false) {
+        // 如果是用户发送的第一条消息，清除欢迎卡片
+        if (isUser) {
+            // 查找并移除欢迎卡片
+            const welcomeCard = chatMessages.querySelector('.welcome-card');
+            if (welcomeCard) {
+                // 找到包含欢迎卡片的消息元素并移除
+                const welcomeMessage = welcomeCard.closest('.message');
+                if (welcomeMessage) {
+                    welcomeMessage.remove();
+                }
+            }
+        }
+
         const messageDiv = document.createElement('div');
         messageDiv.className = `message ${isUser ? 'user-message' : 'ai-message'}`;
         
@@ -238,8 +285,8 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
         chatMessages.appendChild(messageDiv);
         
-        // 滚动到底部
-        chatMessages.scrollTop = chatMessages.scrollHeight;
+        // 使用改进的滚动函数
+        scrollToBottom();
         
         // 添加到当前聊天记录
         currentChat.messages.push({
@@ -395,7 +442,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 `;
                 chatMessages.appendChild(aiMessage);
-                chatMessages.scrollTop = chatMessages.scrollHeight;
+                scrollToBottom(); // 使用改进的滚动函数
                 
                 // 添加到当前聊天记录
                 currentChat.messages.push({
@@ -729,8 +776,8 @@ document.addEventListener('DOMContentLoaded', function() {
                                         <p>${modifiedResponse}</p>
                                     </div>
                                 `;
-                                // 自动滚动到最新消息
-                                chatMessages.scrollTop = chatMessages.scrollHeight;
+                                // 使用改进的滚动函数
+                                scrollToBottom();
                                 
                                 // 触发MathJax重新渲染
                                 if (typeof MathJax !== 'undefined' && MathJax.typesetPromise) {
