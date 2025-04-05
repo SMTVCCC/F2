@@ -1768,25 +1768,54 @@ body {
     100% { box-shadow: 0 0 15px rgba(255, 105, 180, 0.8); }
 }
 
-/* 美化欢迎卡片样式 */
+/* 美化欢迎卡片样式 - 全新设计 */
 .welcome-card {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 250, 250, 0.95));
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.97), rgba(255, 250, 252, 0.97));
     border: none !important;
-    box-shadow: 0 10px 30px rgba(255, 105, 180, 0.15) !important;
+    box-shadow: 0 15px 40px rgba(255, 105, 180, 0.15), 0 5px 15px rgba(0, 0, 0, 0.05) !important;
     position: relative;
     overflow: hidden;
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    border-radius: 24px !important;
+    border-radius: 28px !important;
     border: 1px solid rgba(255, 182, 193, 0.3) !important;
-    padding: 30px !important;
-    margin-top: 20px;
-    animation: welcomeAppear 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+    padding: 0 !important;
+    margin: 25px auto;
+    max-width: 85%;
+    animation: welcomeAppear 1s cubic-bezier(0.22, 1, 0.36, 1);
+    transform-origin: center;
 }
 
 @keyframes welcomeAppear {
-    0% { transform: translateY(20px); opacity: 0; }
-    100% { transform: translateY(0); opacity: 1; }
+    0% { transform: translateY(30px) scale(0.97); opacity: 0; }
+    100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+/* 顶部装饰 */
+.welcome-decoration-top {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 8px;
+    background: linear-gradient(90deg, #FF69B4, #DA70D6, #FFB6C1, #9370DB);
+    z-index: 5;
+}
+
+/* 装饰元素 */
+.welcome-decoration {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 160px;
+    height: 160px;
+    background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMTUwLDAgTDIwMCwwIEwyMDAsMjAwIEwwLDIwMCBMMCwxNTAgQzAsMjAwIDE1MCwyMDAgMTUwLDAgWiIgZmlsbD0icmdiYSgyNTUsIDEwNSwgMTgwLCAwLjAzKSIvPjwvc3ZnPg==');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    opacity: 0.7;
+    z-index: 0;
+    pointer-events: none;
 }
 
 .welcome-card::before {
@@ -1796,33 +1825,30 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiB2aWV3Qm94PSIwIDAgMTAwIDEwMCI+CiAgPGcgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIj4KICAgIDxjaXJjbGUgY3g9IjUwIiBjeT0iNTAiIHI9IjQiIGZpbGw9InJnYmEoMjU1LCAxMDUsIDE4MCwgMC4xKSIvPgogIDwvZz4KPC9zdmc+');
-    opacity: 0.4;
-    z-index: -1;
+    background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiB2aWV3Qm94PSIwIDAgMTAwIDEwMCI+CiAgPGcgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIj4KICAgIDxjaXJjbGUgY3g9IjUwIiBjeT0iNTAiIHI9IjQiIGZpbGw9InJnYmEoMjU1LCAxMDUsIDE4MCwgMC4wOCkiLz4KICA8L2c+Cjwvc3ZnPg==');
+    opacity: 0.7;
+    z-index: 0;
+    pointer-events: none;
 }
 
-.welcome-card::after {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle at top right, rgba(255, 182, 193, 0.1), rgba(255, 255, 255, 0) 70%);
-    z-index: -1;
-}
-
+/* 顶部区域 */
 .welcome-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
+    align-items: flex-start;
+    padding: 32px 35px 20px;
     position: relative;
+    z-index: 1;
+}
+
+.welcome-title-group {
+    display: flex;
+    flex-direction: column;
 }
 
 .welcome-card h2 {
-    font-size: 32px !important;
-    margin-bottom: 0 !important;
+    font-size: 34px !important;
+    margin-bottom: 5px !important;
     position: relative;
     display: inline-block;
     background: linear-gradient(135deg, #FF69B4, #DA70D6) !important;
@@ -1830,21 +1856,20 @@ body {
     background-clip: text !important;
     color: transparent !important;
     letter-spacing: 0.5px;
+    font-weight: 700 !important;
+    line-height: 1.2 !important;
 }
 
-.welcome-card h2::after {
-    content: '';
-    position: absolute;
-    bottom: -4px;
-    left: 0;
-    width: 100%;
-    height: 2px;
-    background: linear-gradient(90deg, #FF69B4, transparent);
-    opacity: 0.6;
+.welcome-subtitle {
+    font-size: 15px;
+    color: #777;
+    margin: 0;
+    font-weight: 500;
+    letter-spacing: 0.3px;
 }
 
 .welcome-card .candy-loading {
-    font-size: 26px;
+    font-size: 28px;
     margin-left: 8px;
     vertical-align: middle;
     display: inline-block;
@@ -1857,21 +1882,27 @@ body {
     50% { transform: translateY(-10px) rotate(10deg); }
 }
 
-.welcome-stamp {
+.welcome-badge-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-end;
+}
+
+.welcome-model-badge {
     background: linear-gradient(135deg, #FF69B4, #DA70D6);
     color: white;
-    padding: 6px 12px;
+    padding: 6px 14px;
     border-radius: 20px;
     font-size: 12px;
     font-weight: bold;
     letter-spacing: 0.5px;
     box-shadow: 0 4px 10px rgba(255, 105, 180, 0.3);
-    transform: rotate(3deg);
     position: relative;
     overflow: hidden;
 }
 
-.welcome-stamp::before {
+.welcome-model-badge::before {
     content: '';
     position: absolute;
     top: 0;
@@ -1883,131 +1914,250 @@ body {
         rgba(255, 255, 255, 0.5) 50%, 
         rgba(255, 255, 255, 0) 100%);
     transform: translateX(-100%);
-    animation: shimmerStamp 2s infinite;
+    animation: shimmerBadge 2s infinite;
 }
 
-@keyframes shimmerStamp {
+@keyframes shimmerBadge {
     0% { transform: translateX(-100%); }
     100% { transform: translateX(100%); }
 }
 
+.welcome-version-badge {
+    background: rgba(255, 255, 255, 0.9);
+    color: #FF69B4;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    border: 1px solid rgba(255, 105, 180, 0.2);
+}
+
+/* 主要内容区 */
+.welcome-content {
+    padding: 0 35px 20px;
+    position: relative;
+    z-index: 1;
+}
+
 .welcome-text {
-    font-size: 17px !important;
+    font-size: 16px !important;
     line-height: 1.7 !important;
     color: #555 !important;
-    margin: 20px 0 !important;
+    margin: 10px 0 25px !important;
     position: relative;
     padding-left: 0;
     font-weight: 400;
     letter-spacing: 0.3px;
 }
 
-.welcome-features {
+/* 能力展示部分 */
+.welcome-abilities {
     display: flex;
-    gap: 12px;
-    margin: 25px 0;
+    flex-direction: row;
     flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 30px;
+    justify-content: space-between;
 }
 
-.welcome-feature-item {
+.welcome-ability-row {
+    display: contents; /* 使行容器的子元素直接成为祖父元素的子元素 */
+}
+
+.welcome-ability-item {
+    flex: 0 0 calc(50% - 8px); /* 每行两个，减去间隙的一半 */
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 16px;
+    padding: 16px;
     display: flex;
     align-items: center;
-    gap: 8px;
-    background: rgba(255, 255, 255, 0.7);
-    padding: 8px 15px;
-    border-radius: 12px;
-    font-size: 14px;
-    color: #666;
-    border: 1px solid rgba(255, 182, 193, 0.2);
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.03);
+    gap: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(255, 182, 193, 0.15);
     transition: all 0.3s ease;
-    cursor: pointer;
 }
 
-.welcome-feature-item:hover {
+.welcome-ability-item:hover {
     transform: translateY(-3px);
-    box-shadow: 0 5px 15px rgba(255, 105, 180, 0.15);
-    border-color: rgba(255, 105, 180, 0.3);
+    box-shadow: 0 8px 20px rgba(255, 105, 180, 0.15);
+    border-color: rgba(255, 105, 180, 0.25);
     background: white;
 }
 
-.welcome-feature-item i {
-    color: #FF69B4;
-    font-size: 14px;
-    background: linear-gradient(135deg, #FF69B4, #DA70D6);
-    -webkit-background-clip: text;
+.ability-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(255, 105, 180, 0.1), rgba(218, 112, 214, 0.1));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: transparent;
     background-clip: text;
-    -webkit-text-fill-color: transparent;
+    -webkit-background-clip: text;
+    background-image: linear-gradient(135deg, #FF69B4, #DA70D6);
 }
 
-.welcome-feature-item:hover i {
-    animation: iconPulse 1s infinite alternate;
+.welcome-ability-item:hover .ability-icon {
+    animation: iconPulseAbility 1s infinite alternate;
 }
 
-@keyframes iconPulse {
+@keyframes iconPulseAbility {
     0% { transform: scale(1); }
-    100% { transform: scale(1.2); }
+    100% { transform: scale(1.15); }
 }
 
-.welcome-card .tech-badge {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.8), rgba(255, 250, 250, 0.8)) !important;
-    border: 1px solid rgba(255, 105, 180, 0.2) !important;
-    box-shadow: 0 5px 15px rgba(255, 105, 180, 0.1) !important;
-    padding: 10px 20px !important;
-    border-radius: 30px !important;
-    font-size: 14px !important;
-    letter-spacing: 0.5px !important;
-    display: inline-flex !important;
-    align-items: center !important;
+.ability-text {
+    flex: 1;
+}
+
+.ability-text h4 {
+    margin: 0 0 5px;
+    font-size: 15px;
+    color: #333;
+    font-weight: 600;
+}
+
+.ability-text p {
+    margin: 0;
+    font-size: 12px;
+    color: #777;
+    line-height: 1.4;
+}
+
+/* 快速启动区 */
+.welcome-quickstart {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.8), rgba(255, 250, 252, 0.8));
+    border-radius: 16px;
+    padding: 18px 20px;
+    box-shadow: 0 5px 20px rgba(255, 105, 180, 0.07);
+    border: 1px solid rgba(255, 182, 193, 0.2);
+    margin-bottom: 20px;
+}
+
+.welcome-quickstart h3 {
+    margin: 0 0 15px;
+    font-size: 15px;
+    color: #FF69B4;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.welcome-quickstart h3 i {
+    font-size: 12px;
+}
+
+.quickstart-items {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.quickstart-item {
+    background: white;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #555;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(255, 182, 193, 0.1);
+    transition: all 0.3s ease;
+}
+
+.quickstart-item:hover {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), white);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 105, 180, 0.15);
+    border-color: rgba(255, 105, 180, 0.2);
+    color: #FF69B4;
+}
+
+.quickstart-item i {
+    color: #FF69B4;
+    font-size: 12px;
+}
+
+/* 底部区域 */
+.welcome-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 35px 30px;
+    position: relative;
+    z-index: 5;
+}
+
+.tech-badge {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.8) !important;
+    border: 1px solid rgba(255, 105, 180, 0.15) !important;
+    box-shadow: 0 5px 15px rgba(255, 105, 180, 0.05) !important;
+    padding: 8px 16px !important;
+    border-radius: 20px !important;
+    font-size: 13px !important;
+    letter-spacing: 0.3px !important;
     position: relative !important;
-    margin-top: 5px !important;
     backdrop-filter: blur(5px) !important;
     -webkit-backdrop-filter: blur(5px) !important;
-    color: #FF69B4 !important;
-    font-weight: 600 !important;
+    color: #666 !important;
+    font-weight: 500 !important;
 }
 
-.welcome-card .tech-badge::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(90deg, 
-        rgba(255, 255, 255, 0) 0%, 
-        rgba(255, 255, 255, 0.5) 50%, 
-        rgba(255, 255, 255, 0) 100%);
-    transform: translateX(-100%);
-    animation: shimmerWelcome 3s infinite;
+.tech-badge-icon {
+    color: #FF69B4;
+    font-size: 14px;
 }
 
-@keyframes shimmerWelcome {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
+.tech-badge-text {
+    display: flex;
+    align-items: center;
 }
 
-.welcome-card .tech-dot {
-    width: 8px !important;
-    height: 8px !important;
-    margin: 0 10px !important;
+.tech-dot {
+    width: 6px !important;
+    height: 6px !important;
+    margin: 0 8px !important;
     background: linear-gradient(135deg, #FF69B4, #DA70D6) !important;
-    box-shadow: 0 0 10px rgba(255, 105, 180, 0.5) !important;
+    box-shadow: 0 0 8px rgba(255, 105, 180, 0.4) !important;
+    border-radius: 50%;
 }
 
+.welcome-tips {
+    font-size: 13px;
+    color: #888;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.welcome-tips i {
+    color: #FFB6C1;
+    font-size: 12px;
+}
+
+/* 底部波浪 */
 .welcome-wave {
     position: absolute;
     bottom: 0;
     left: 0;
     width: 100%;
-    height: 8px;
+    height: 6px;
     background: linear-gradient(90deg, 
         rgba(255, 105, 180, 0.5), 
         rgba(218, 112, 214, 0.5), 
         rgba(255, 182, 193, 0.5), 
         rgba(147, 112, 219, 0.5));
-    border-radius: 0 0 24px 24px;
-    z-index: 1;
+    border-radius: 0 0 28px 28px;
+    z-index: 2;
     overflow: hidden;
 }
 
@@ -2016,16 +2166,158 @@ body {
     position: absolute;
     top: 0;
     left: 0;
-    width: 100%;
+    width: 200%;
     height: 100%;
     background: linear-gradient(90deg, 
         transparent, 
-        rgba(255, 255, 255, 0.5), 
+        rgba(255, 255, 255, 0.7), 
         transparent);
-    animation: waveMove 2s infinite linear;
+    animation: waveMove 3s infinite linear;
 }
 
 @keyframes waveMove {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
+    0% { transform: translateX(-50%); }
+    100% { transform: translateX(0%); }
+}
+
+/* 移动端响应式适配 */
+@media (max-width: 768px) {
+    .welcome-card {
+        max-width: 95%;
+        padding: 0 !important;
+    }
+    
+    .welcome-header {
+        padding: 25px 20px 15px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    
+    .welcome-badge-group {
+        flex-direction: row;
+        align-items: center;
+    }
+    
+    .welcome-content {
+        padding: 0 20px 15px;
+    }
+    
+    .welcome-ability-row {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .welcome-footer {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+        padding: 15px 20px 25px;
+    }
+}
+
+/* 移动端添加的关键样式 */
+.mobile-device.keyboard-open {
+    height: 100%;
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+}
+
+.mobile-device.keyboard-open .main-content {
+    height: 100%;
+    position: relative;
+}
+
+.mobile-device.keyboard-open .input-area {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    background: white;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    padding-bottom: env(safe-area-inset-bottom, 10px);
+}
+
+.mobile-device.keyboard-open .chat-messages {
+    padding-bottom: 80px; /* 预留输入区域的空间 */
+}
+
+/* 修复移动端灰色遮罩层样式 */
+.mobile-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    animation: fadeIn 0.3s ease;
+}
+
+.mobile-overlay.show {
+    display: block;
+}
+
+@media (max-width: 768px) {
+    /* 确保输入区域始终可见 */
+    .input-area {
+        padding: 10px;
+        position: sticky;
+        bottom: 0;
+        z-index: 20;
+        background: rgba(255, 255, 255, 0.98);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+    }
+    
+    .chat-messages {
+        padding-bottom: 20px; /* 留出空间给输入区域 */
+    }
+    
+    /* 欢迎卡片调整 */
+    .welcome-card {
+        margin: 15px auto;
+        max-width: 95%;
+    }
+    
+    /* 修复空白和灰色遮罩问题 */
+    .chat-container {
+        height: 100%;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        overflow: hidden;
+    }
+    
+    /* 移动端响应式适配 */
+    .welcome-ability-item {
+        flex: 0 0 100%; /* 在移动设备上变成单列 */
+        margin-bottom: 12px;
+    }
+    
+    .welcome-quickstart .quickstart-items {
+        flex-direction: column; /* 快速启动项在移动设备上垂直排列 */
+    }
+    
+    .quickstart-item {
+        width: 100%; /* 在移动设备上占满宽度 */
+    }
+}
+
+/* 安卓设备特定调整 */
+.android-device .input-area {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 30;
+}
+
+.android-device .chat-messages {
+    padding-bottom: 70px;
 }
