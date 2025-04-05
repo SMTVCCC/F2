@@ -2,7 +2,7 @@
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <title>SMT-AI智能体</title>
     <link rel="stylesheet" href="styles.css">
@@ -437,12 +437,96 @@
         <div class="main-content">
             <div class="chat-messages" id="chatMessages">
                 <div class="message ai-message">
-                    <div class="message-content">
-                        <h2>Hi，我是SMTAI<span class="candy-loading">🍬</span></h2>
-                        <p class="welcome-text">我是您的AI助手，可以帮您解答问题、创作内容、编写代码等～</p>
-                        <div class="tech-badge">
-                            AI驱动 <span class="tech-dot"></span> Deepseek R1
+                    <div class="message-content welcome-card">
+                        <!-- 顶部装饰元素 -->
+                        <div class="welcome-decoration-top"></div>
+                        
+                        <!-- 顶部信息区 -->
+                        <div class="welcome-header">
+                            <div class="welcome-title-group">
+                                <h2>Hi，我是SMTAI<span class="candy-loading">🍬</span></h2>
+                                <p class="welcome-subtitle">您的智能AI伙伴</p>
+                            </div>
+                            <div class="welcome-badge-group">
+                                <div class="welcome-model-badge">Deepseek R1</div>
+                                <div class="welcome-version-badge">V3.0</div>
+                            </div>
                         </div>
+                        
+                        <!-- 主要内容介绍 -->
+                        <div class="welcome-content">
+                            <p class="welcome-text">我是您的AI助手，可以帮您解答问题、创作内容、编写代码，支持数学公式和深度思考～</p>
+                            
+                            <!-- 能力展示区 -->
+                            <div class="welcome-abilities">
+                                <div class="welcome-ability-row">
+                                    <div class="welcome-ability-item">
+                                        <div class="ability-icon"><i class="fas fa-brain"></i></div>
+                                        <div class="ability-text">
+                                            <h4>深度思考</h4>
+                                            <p>强大的推理和分析能力</p>
+                                        </div>
+                                    </div>
+                                    <div class="welcome-ability-item">
+                                        <div class="ability-icon"><i class="fas fa-pen-fancy"></i></div>
+                                        <div class="ability-text">
+                                            <h4>创意写作</h4>
+                                            <p>生成高质量文章内容</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="welcome-ability-row">
+                                    <div class="welcome-ability-item">
+                                        <div class="ability-icon"><i class="fas fa-code"></i></div>
+                                        <div class="ability-text">
+                                            <h4>编程助手</h4>
+                                            <p>代码生成和问题解决</p>
+                                        </div>
+                                    </div>
+                                    <div class="welcome-ability-item">
+                                        <div class="ability-icon"><i class="fas fa-square-root-alt"></i></div>
+                                        <div class="ability-text">
+                                            <h4>数学支持</h4>
+                                            <p>公式渲染和计算能力</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 快速启动区 -->
+                            <div class="welcome-quickstart">
+                                <h3>快速尝试 <i class="fas fa-chevron-right"></i></h3>
+                                <div class="quickstart-items">
+                                    <div class="quickstart-item" data-prompt="请详细介绍一下你的功能和能力">
+                                        <i class="fas fa-info-circle"></i>
+                                        <span>了解我的功能</span>
+                                    </div>
+                                    <div class="quickstart-item" data-prompt="请帮我写一篇关于人工智能的短文">
+                                        <i class="fas fa-feather-alt"></i>
+                                        <span>生成一篇短文</span>
+                                    </div>
+                                    <div class="quickstart-item" data-prompt="请用LaTeX写一个复杂的数学公式">
+                                        <i class="fas fa-calculator"></i>
+                                        <span>展示数学公式</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 底部信息区 -->
+                        <div class="welcome-footer">
+                            <div class="tech-badge">
+                                <div class="tech-badge-icon"><i class="fas fa-bolt"></i></div>
+                                <div class="tech-badge-text">AI驱动 <span class="tech-dot"></span> Deepseek R1</div>
+                            </div>
+                            <div class="welcome-tips">
+                                <i class="fas fa-lightbulb"></i> 提示：使用"深度思考(R1)"模式以获得更全面的回答
+                            </div>
+                        </div>
+                        
+                        <!-- 装饰元素 -->
+                        <div class="welcome-decoration"></div>
+                        <div class="welcome-wave"></div>
                     </div>
                 </div>
             </div>

@@ -63,7 +63,7 @@ SMT-AI 是一个现代化的 AI 对话助手网页应用，基于 Deepseek R1 �
 - 内置趣味性彩蛋交互
 
 ## 联系方式
-如有问题或建议，请联系：smtoffice@yeah.net
+如有问题或建议，请联系：qqnlrwzcb@163.com
 
 ## 更多作品
 访问 [SMT作品集](https://timelist.netlify.app/) 查看更多作品
