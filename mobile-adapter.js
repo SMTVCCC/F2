@@ -17,10 +17,9 @@ const MobileAdapter = {
             this.setupMobileLayout();
             this.setupTouchEvents();
             this.handleSidebarToggle();
-            this.hideQuickActions();
-            this.disableZoomAndScroll();
+            // this.hideQuickActions(); // 注释掉隐藏快捷功能区
+            // this.disableZoomAndScroll(); // 注释掉禁止缩放和滚动
             this.fixMenuItemClicks();
-            this.addWelcomeQuickStartClickHandler();
             this.fixKeyboardIssues();
         }
     },
@@ -120,10 +119,11 @@ const MobileAdapter = {
                 visibility: visible !important;
             }
             
-            /* 隐藏快捷功能区 */
+            /* 注释掉隐藏快捷功能区的CSS 
             .mobile-device .quick-actions {
                 display: none !important;
             }
+            */
             
             /* 固定整体布局 */
             .mobile-device .chat-container {
@@ -243,12 +243,15 @@ const MobileAdapter = {
             this.handleSwipe();
         });
         
+        // 注释掉防止双指缩放的代码
+        /*
         // 防止双指缩放
         document.addEventListener('touchmove', (e) => {
             if (e.touches.length > 1) {
                 e.preventDefault();
             }
         }, { passive: false });
+        */
     },
 
     // 处理滑动手势
@@ -279,11 +282,13 @@ const MobileAdapter = {
     
     // 禁止缩放和滚动
     disableZoomAndScroll() {
-        // 更新meta viewport标签，禁止缩放
+        // 不再修改meta viewport标签，允许缩放
+        /* 
         const metaViewport = document.querySelector('meta[name="viewport"]');
         if (metaViewport) {
             metaViewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover');
         }
+        */
         
         // 禁止body滚动，只允许聊天区域滚动
         document.body.style.overflow = 'hidden';
@@ -427,24 +432,6 @@ const MobileAdapter = {
                 
                 // 点击后收起侧边栏
                 if(sidebar && overlay && MobileAdapter.isMobile()) {
-                    sidebar.classList.add('collapsed');
-                    overlay.classList.remove('show');
-                }
-            });
-        });
-    },
-    
-    // 添加欢迎卡片快速启动项点击事件处理
-    addWelcomeQuickStartClickHandler() {
-        // 为欢迎卡片中的快速启动项添加点击事件
-        const quickstartItems = document.querySelectorAll('.quickstart-item');
-        const sidebar = document.querySelector('.sidebar');
-        const overlay = document.querySelector('.mobile-overlay');
-        
-        quickstartItems.forEach(item => {
-            item.addEventListener('click', function() {
-                // 如果侧边栏展开，则收起
-                if(sidebar && overlay && MobileAdapter.isMobile() && !sidebar.classList.contains('collapsed')) {
                     sidebar.classList.add('collapsed');
                     overlay.classList.remove('show');
                 }
