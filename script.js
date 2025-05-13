@@ -13,6 +13,337 @@ document.addEventListener('DOMContentLoaded', function() {
     const toggleSidebar = document.getElementById('toggleSidebar');
     const sidebar = document.querySelector('.sidebar');
     const perfectAnswerToggle = document.getElementById('perfectAnswerToggle');
+    const logoImage = document.querySelector('.logo'); // 获取logo元素
+    const easterEggAudio = document.getElementById('easterEggAudio'); // 获取音频元素
+
+    // 添加logo点击彩蛋
+    let isEasterEggActive = false;
+    let easterEggOverlay = null;
+
+    // 创建锁屏遮罩
+    function createEasterEggOverlay() {
+        easterEggOverlay = document.createElement('div');
+        easterEggOverlay.className = 'easter-egg-overlay';
+        easterEggOverlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 105, 180, 0.7);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.5s;
+            pointer-events: all;
+        `;
+        
+        const message = document.createElement('div');
+        message.style.cssText = `
+            font-size: 32px;
+            color: white;
+            text-align: center;
+            text-shadow: 0 0 10px rgba(0,0,0,0.5);
+            margin-bottom: 20px;
+            font-weight: bold;
+        `;
+        message.textContent = '发现彩蛋！';
+        
+        // 添加旋转的糖果图标
+        const candyContainer = document.createElement('div');
+        candyContainer.style.cssText = `
+            font-size: 100px;
+            display: flex;
+            margin: 20px 0;
+        `;
+        
+        // 添加多个旋转糖果
+        for (let i = 0; i < 5; i++) {
+            const candy = document.createElement('div');
+            candy.textContent = '🍬';
+            candy.style.cssText = `
+                animation: rotateCandyEgg 2s infinite ${i * 0.2}s;
+                margin: 0 10px;
+            `;
+            candyContainer.appendChild(candy);
+        }
+        
+        // 倒计时文本
+        const countdown = document.createElement('div');
+        countdown.style.cssText = `
+            font-size: 24px;
+            color: white;
+            margin-top: 20px;
+        `;
+        countdown.textContent = '屏幕锁定中...6秒';
+        
+        // 添加音频播放按钮（解决浏览器自动播放限制）
+        const playButton = document.createElement('button');
+        playButton.style.cssText = `
+            margin-top: 20px;
+            padding: 10px 20px;
+            border: 2px solid white;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        `;
+        playButton.textContent = '🔊 点击播放音效';
+        playButton.addEventListener('click', function() {
+            if (easterEggAudio) {
+                easterEggAudio.currentTime = 0;
+                easterEggAudio.volume = 0.8;
+                easterEggAudio.play();
+                this.textContent = '✓ 音效已播放';
+                this.style.background = 'rgba(0,255,0,0.2)';
+                this.style.borderColor = '#00FF00';
+            }
+        });
+        
+        // 添加CSS动画
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes rotateCandyEgg {
+                0% { transform: rotate(0deg) scale(1); }
+                25% { transform: rotate(90deg) scale(1.2); }
+                50% { transform: rotate(180deg) scale(1); }
+                75% { transform: rotate(270deg) scale(0.8); }
+                100% { transform: rotate(360deg) scale(1); }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        easterEggOverlay.appendChild(message);
+        easterEggOverlay.appendChild(candyContainer);
+        easterEggOverlay.appendChild(countdown);
+        easterEggOverlay.appendChild(playButton); // 添加播放按钮
+        document.body.appendChild(easterEggOverlay);
+        
+        // 倒计时效果
+        let secondsLeft = 6;
+        const countdownInterval = setInterval(() => {
+            secondsLeft--;
+            if (secondsLeft > 0) {
+                countdown.textContent = `屏幕锁定中...${secondsLeft}秒`;
+            } else {
+                clearInterval(countdownInterval);
+                countdown.textContent = '解锁中...';
+            }
+        }, 1000);
+        
+        // 渐变显示
+        setTimeout(() => {
+            easterEggOverlay.style.opacity = '1';
+        }, 10);
+    }
+
+    // 添加logo点击事件
+    if (logoImage) {
+        logoImage.style.cursor = 'pointer'; // 添加指针样式提示可点击
+        logoImage.title = '试试连续点击3次...'; // 修改悬停提示
+        
+        // 检查是否已经触发过彩蛋（从localStorage读取状态）
+        let hasTriggeredEasterEgg = localStorage.getItem('smtEasterEggTriggered') === 'true';
+        
+        // 如果已经触发过，修改提示
+        if (hasTriggeredEasterEgg) {
+            logoImage.title = '再次点击logo 3次可重置彩蛋'; 
+        }
+        
+        // 添加悬停效果
+        logoImage.addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.1)';
+            this.style.transition = 'transform 0.3s ease';
+        });
+        
+        logoImage.addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1)';
+        });
+        
+        // 初始化音频（预加载）
+        if (easterEggAudio) {
+            // 确保音频元素正确配置
+            easterEggAudio.preload = 'auto';
+            easterEggAudio.volume = 0.8;
+            
+            // 添加音频事件监听器以便调试
+            easterEggAudio.addEventListener('canplaythrough', () => {
+                console.log('[调试] 音频文件已加载完成，可以播放');
+            });
+            
+            easterEggAudio.addEventListener('error', (e) => {
+                console.error('[错误] 音频加载失败:', e);
+            });
+            
+            // 尝试预加载音频
+            try {
+                easterEggAudio.load();
+            } catch (e) {
+                console.error('[错误] 音频预加载失败:', e);
+            }
+        } else {
+            console.error('[错误] 未找到音频元素!');
+        }
+        
+        // 跟踪连续点击
+        let clickCount = 0;
+        let clickTimer = null;
+        
+        logoImage.addEventListener('click', function(e) {
+            // 增加点击计数
+            clickCount++;
+            console.log('[调试] Logo被点击，当前点击次数:', clickCount);
+            
+            // 清除之前的计时器
+            if (clickTimer) {
+                clearTimeout(clickTimer);
+            }
+            
+            // 设置新的计时器，1.5秒内没有新的点击则重置计数
+            clickTimer = setTimeout(() => {
+                console.log('[调试] 点击超时，重置计数');
+                clickCount = 0;
+            }, 1500);
+            
+            // 只有达到3次点击才触发彩蛋
+            if (clickCount < 3) {
+                return;
+            }
+            
+            // 重置点击计数
+            clickCount = 0;
+            
+            // 如果已经触发过彩蛋，则重置状态并退出
+            if (hasTriggeredEasterEgg) {
+                localStorage.removeItem('smtEasterEggTriggered');
+                hasTriggeredEasterEgg = false;
+                logoImage.title = '试试连续点击3次...';
+                
+                return;
+            }
+            
+            // 防止重复触发
+            if (isEasterEggActive) return;
+            isEasterEggActive = true;
+            
+            // 记录彩蛋已被触发
+            localStorage.setItem('smtEasterEggTriggered', 'true');
+            hasTriggeredEasterEgg = true;
+            
+            // 锁定整个界面的交互
+            document.body.style.overflow = 'hidden'; // 禁止滚动
+            
+            // 创建一个透明遮罩，防止用户点击任何界面元素
+            const interactionBlocker = document.createElement('div');
+            interactionBlocker.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                z-index: 9998;
+                cursor: not-allowed;
+            `;
+            document.body.appendChild(interactionBlocker);
+            
+            // 播放音频
+            if (easterEggAudio) {
+                console.log('[调试] 尝试播放音频');
+                
+                // 强制重新加载音频
+                easterEggAudio.load();
+                easterEggAudio.currentTime = 0; // 重置音频起始位置
+                
+                // 设置音量渐变
+                easterEggAudio.volume = 0.8; // 直接设置较高音量
+                
+                // 使用新的方式强制播放音频
+                const playPromise = easterEggAudio.play();
+                
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        console.log('[调试] 音频播放成功');
+                    }).catch(error => {
+                        console.error('[错误] 音频播放失败:', error);
+                        
+                        // 尝试使用备用方法
+                        setTimeout(() => {
+                            try {
+                                easterEggAudio.play();
+                                console.log('[调试] 音频重试播放');
+                            } catch (e) {
+                                console.error('[错误] 音频重试失败:', e);
+                            }
+                        }, 500);
+                    });
+                }
+            } else {
+                console.error('[错误] 无法找到音频元素');
+            }
+            
+            // 创建锁屏遮罩
+            createEasterEggOverlay();
+            
+            // 创建提示文本反馈音频状态
+            const audioStatus = document.createElement('div');
+            audioStatus.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background: rgba(0,0,0,0.6);
+                color: white;
+                padding: 8px 12px;
+                border-radius: 4px;
+                font-size: 12px;
+                z-index: 10000;
+            `;
+            
+            if (easterEggAudio && !easterEggAudio.paused) {
+                audioStatus.textContent = '✓ 音频播放中';
+            } else {
+                audioStatus.textContent = '✗ 音频无法播放';
+            }
+            
+            document.body.appendChild(audioStatus);
+            
+            // 6秒后移除遮罩并解除锁定
+            setTimeout(() => {
+                if (easterEggOverlay) {
+                    easterEggOverlay.style.opacity = '0';
+                    
+                    // 音量渐出
+                    if (easterEggAudio && !easterEggAudio.paused) {
+                        const volumeFadeOut = setInterval(() => {
+                            if (easterEggAudio.volume > 0.1) {
+                                easterEggAudio.volume -= 0.1;
+                            } else {
+                                clearInterval(volumeFadeOut);
+                                easterEggAudio.pause();
+                            }
+                        }, 100);
+                    }
+                    
+                    setTimeout(() => {
+                        if (easterEggOverlay) {
+                            easterEggOverlay.remove();
+                            easterEggOverlay = null;
+                        }
+                        // 移除交互阻止器和音频状态
+                        interactionBlocker.remove();
+                        if (audioStatus) audioStatus.remove();
+                        // 恢复正常滚动
+                        document.body.style.overflow = '';
+                        isEasterEggActive = false;
+                    }, 500);
+                }
+            }, 6000);
+        });
+    }
 
     // 调试信息：检查必要元素是否存在
     console.log('[调试] 发送按钮元素:', !!sendButton);
