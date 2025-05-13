@@ -64,6 +64,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // 添加自动滚动控制变量
     let userScrolled = false;
     let scrollTimer = null;
+    let lastMessageCount = 0; // 新增：跟踪消息数量，用于检测新消息
+    
+    // 初始化lastMessageCount为当前消息数量
+    lastMessageCount = chatMessages.querySelectorAll('.message').length;
 
     // 监听用户滚动事件
     chatMessages.addEventListener('scroll', function() {
@@ -76,12 +80,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 clearTimeout(scrollTimer);
             }
             
-            // 设置新的定时器，2秒后重置用户滚动状态
+            // 记录当前消息数量
+            lastMessageCount = chatMessages.querySelectorAll('.message').length;
+            
+            // 不再自动重置userScrolled状态，只设置一个检测新消息的定时器
             scrollTimer = setTimeout(() => {
-                userScrolled = false;
-                // 如果定时器到时，尝试再次滚动到底部
-                if (!userScrolled) {
+                // 检测定时器触发时是否有新消息
+                const currentMessageCount = chatMessages.querySelectorAll('.message').length;
+                // 只有当有新消息时才重置滚动状态并滚动到底部
+                if (currentMessageCount > lastMessageCount) {
+                    userScrolled = false;
                     chatMessages.scrollTop = chatMessages.scrollHeight;
+                    // 更新消息计数
+                    lastMessageCount = currentMessageCount;
                 }
             }, 2000);
         }
@@ -92,6 +103,12 @@ document.addEventListener('DOMContentLoaded', function() {
         // 只有当用户没有主动滚动时，才自动滚动到底部
         if (!userScrolled) {
             chatMessages.scrollTop = chatMessages.scrollHeight;
+        } else {
+            // 如果用户已滚动，检查是否应该更新lastMessageCount
+            const currentMessageCount = chatMessages.querySelectorAll('.message').length;
+            if (currentMessageCount > lastMessageCount) {
+                lastMessageCount = currentMessageCount;
+            }
         }
     }
 
@@ -217,26 +234,38 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 添加对话到历史记录栏
     function addChatToHistory(chat) {
+        console.log('[调试] 添加对话到历史记录栏, ID:', chat.id);
+        
         // 避免重复添加
         const existingItem = document.querySelector(`.history-item[data-chat-id="${chat.id}"]`);
         if (existingItem) {
+            console.log('[调试] 历史记录项已存在，跳过添加');
             return;
         }
 
         // 获取有意义的预览文本
         let previewText = "";
+        let previewIcon = "fas fa-comment"; // 默认图标
+        
         // 寻找第一条用户消息作为预览
         const firstUserMessage = chat.messages.find(m => m.type === 'user');
         if (firstUserMessage) {
             // 清理消息内容，移除HTML标签和命令代码部分
             let cleanText = firstUserMessage.content;
             
-            // 如果是生图命令，提取描述部分
+            // 如果是生图命令，提取描述部分并设置特殊图标
             if (cleanText.includes('INPUT = {focus}') && cleanText.includes('pollinations.ai')) {
                 const inputIndex = cleanText.lastIndexOf('INPUT =');
                 if (inputIndex !== -1) {
                     cleanText = "AI生图: " + cleanText.substring(inputIndex + 8).trim();
+                    previewIcon = "fas fa-image"; // 图像图标
                 }
+            } else if (cleanText.includes('```') || cleanText.includes('代码') || cleanText.includes('编程')) {
+                previewIcon = "fas fa-code"; // 代码图标
+            } else if (cleanText.includes('翻译')) {
+                previewIcon = "fas fa-language"; // 翻译图标
+            } else if (cleanText.includes('写作') || cleanText.includes('文章')) {
+                previewIcon = "fas fa-pen-fancy"; // 写作图标
             }
             
             // 移除HTML标签
@@ -251,8 +280,22 @@ document.addEventListener('DOMContentLoaded', function() {
         // 创建历史条目
         const historyItem = document.createElement('div');
         historyItem.className = 'history-item';
-        historyItem.textContent = previewText;
-        historyItem.dataset.chatId = chat.id;
+        
+        // 添加图标
+        const iconElement = document.createElement('div');
+        iconElement.className = 'history-icon';
+        iconElement.innerHTML = `<i class="${previewIcon}"></i>`;
+        historyItem.appendChild(iconElement);
+        
+        // 添加内容区域
+        const contentElement = document.createElement('div');
+        contentElement.className = 'history-content';
+        
+        // 添加预览文本
+        const textElement = document.createElement('div');
+        textElement.className = 'history-text';
+        textElement.textContent = previewText;
+        contentElement.appendChild(textElement);
         
         // 添加时间戳
         const timestamp = document.createElement('div');
@@ -263,15 +306,62 @@ document.addEventListener('DOMContentLoaded', function() {
             hour: 'numeric',
             minute: 'numeric'
         });
-        historyItem.appendChild(timestamp);
+        contentElement.appendChild(timestamp);
+        
+        historyItem.appendChild(contentElement);
+        historyItem.dataset.chatId = chat.id;
+        
+        // 如果是当前聊天，添加active类
+        if (chat.id === currentChat.id) {
+            historyItem.classList.add('active');
+        }
         
         // 添加点击事件
         historyItem.addEventListener('click', () => {
             loadChat(chat);
         });
         
+        // 添加删除按钮
+        const deleteButton = document.createElement('div');
+        deleteButton.className = 'history-delete';
+        deleteButton.innerHTML = '<i class="fas fa-times"></i>';
+        deleteButton.title = '删除此对话';
+        deleteButton.addEventListener('click', (e) => {
+            e.stopPropagation(); // 阻止事件冒泡
+            deleteSingleChat(chat.id);
+        });
+        historyItem.appendChild(deleteButton);
+        
         // 在列表开头插入
         chatHistory.insertBefore(historyItem, chatHistory.firstChild);
+    }
+
+    // 删除单个聊天记录
+    function deleteSingleChat(chatId) {
+        console.log('[调试] 删除单个聊天记录, ID:', chatId);
+        
+        // 从数组中移除
+        allChats = allChats.filter(chat => chat.id !== chatId);
+        
+        // 更新localStorage
+        try {
+            localStorage.setItem('allChats', JSON.stringify(allChats));
+            console.log('[调试] 删除后保存成功, 剩余条数:', allChats.length);
+            
+            // 从UI中移除
+            const item = document.querySelector(`.history-item[data-chat-id="${chatId}"]`);
+            if (item) {
+                item.remove();
+            }
+            
+            // 如果删除的是当前聊天，创建新聊天
+            if (chatId === currentChat.id) {
+                console.log('[调试] 删除的是当前聊天，创建新聊天');
+                createNewChat();
+            }
+        } catch (error) {
+            console.error('[错误] 删除聊天记录失败:', error);
+        }
     }
 
     // 加载历史对话
@@ -324,36 +414,89 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 保存聊天记录到localStorage
     function saveChatsToStorage() {
-        // 检查当前对话是否已在allChats中
-        const existingIndex = allChats.findIndex(c => c.id === currentChat.id);
-        if (existingIndex !== -1) {
-            // 如果已存在，则更新它
-            allChats[existingIndex] = currentChat;
-        } else if (currentChat.messages.length > 1) {
-            // 如果不存在且有实际对话内容，则添加它
-            allChats.push({...currentChat});
+        console.log('[调试] 准备保存聊天记录...');
+        
+        // 只有当当前对话有实际内容时才进行保存
+        if (currentChat.messages.length <= 1) {
+            console.log('[调试] 当前对话没有实际内容，跳过保存');
+            return;
         }
-        // 保存到localStorage
+        
         try {
+            // 检查当前对话是否已在allChats中
+            const existingIndex = allChats.findIndex(c => c.id === currentChat.id);
+            
+            if (existingIndex !== -1) {
+                // 如果已存在，则更新它
+                console.log('[调试] 更新现有对话记录，ID:', currentChat.id);
+                allChats[existingIndex] = JSON.parse(JSON.stringify(currentChat));
+            } else {
+                // 如果不存在，则添加它
+                console.log('[调试] 添加新对话记录，ID:', currentChat.id);
+                // 使用深拷贝确保不会有引用问题
+                allChats.push(JSON.parse(JSON.stringify(currentChat)));
+                
+                // 同时更新UI，在历史记录栏中添加该对话
+                addChatToHistory(currentChat);
+            }
+            
+            // 保存到localStorage
             localStorage.setItem('allChats', JSON.stringify(allChats));
             console.log('[调试] 保存聊天记录成功，条数:', allChats.length);
         } catch (error) {
             console.error('[错误] 保存聊天记录失败:', error);
+            
             // 如果存储空间不足，清理旧的聊天记录
             if (error.name === 'QuotaExceededError' || error.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
                 console.log('[调试] 存储空间不足，清理旧聊天记录');
+                
                 // 保留最新的10条聊天
                 if (allChats.length > 10) {
                     allChats = allChats.slice(-10);
+                    
                     try {
                         localStorage.setItem('allChats', JSON.stringify(allChats));
                         console.log('[调试] 清理后重新保存成功');
+                        
+                        // 重新加载历史记录UI
+                        refreshChatHistoryUI();
                     } catch (e) {
                         console.error('[错误] 清理后仍无法保存:', e);
+                        
+                        // 尝试进一步减少保存的记录
+                        if (allChats.length > 5) {
+                            allChats = allChats.slice(-5);
+                            try {
+                                localStorage.setItem('allChats', JSON.stringify(allChats));
+                                console.log('[调试] 进一步清理后保存成功');
+                                refreshChatHistoryUI();
+                            } catch (err) {
+                                console.error('[错误] 无法保存聊天记录，即使减少到5条:', err);
+                            }
+                        }
                     }
                 }
             }
         }
+    }
+
+    // 重新加载历史记录UI
+    function refreshChatHistoryUI() {
+        // 清空历史记录UI
+        chatHistory.innerHTML = '';
+        
+        // 重新添加所有聊天到历史记录
+        allChats.forEach(chat => {
+            addChatToHistory(chat);
+        });
+        
+        // 高亮当前选中的对话
+        document.querySelectorAll('.history-item').forEach(item => {
+            item.classList.remove('active');
+            if (item.dataset.chatId == currentChat.id) {
+                item.classList.add('active');
+            }
+        });
     }
 
     // 处理清空历史记录按钮点击
@@ -433,6 +576,9 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
         `;
         chatMessages.appendChild(messageDiv);
+        
+        // 更新消息计数
+        lastMessageCount = chatMessages.querySelectorAll('.message').length;
         
         // 使用改进的滚动函数
         scrollToBottom();
@@ -956,6 +1102,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         chatMessages.appendChild(tempAiMessage);
+        
+        // 更新消息计数
+        lastMessageCount = chatMessages.querySelectorAll('.message').length;
 
         let finalUserInput = userInput;
         if (contextMode) {
@@ -1020,6 +1169,15 @@ document.addEventListener('DOMContentLoaded', function() {
                                 `;
                                 // 使用改进的滚动函数
                                 scrollToBottom();
+                                
+                                // 流式响应也考虑新消息，如果用户已滚动，则更新消息数量而不自动滚动
+                                if (userScrolled) {
+                                    // 检查是否有新消息，更新lastMessageCount
+                                    const currentMessageCount = chatMessages.querySelectorAll('.message').length;
+                                    if (currentMessageCount > lastMessageCount) {
+                                        lastMessageCount = currentMessageCount;
+                                    }
+                                }
                                 
                                 // 触发MathJax重新渲染
                                 if (typeof MathJax !== 'undefined' && MathJax.typesetPromise) {
