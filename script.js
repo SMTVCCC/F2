@@ -64,10 +64,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // 添加自动滚动控制变量
     let userScrolled = false;
     let scrollTimer = null;
-    let lastMessageCount = 0; // 新增：跟踪消息数量，用于检测新消息
+    let lastMessageCount = 0; // 跟踪消息数量，用于检测新消息
+    let lastReadMessageCount = 0; // 新增：跟踪用户已读取的消息数量
     
     // 初始化lastMessageCount为当前消息数量
     lastMessageCount = chatMessages.querySelectorAll('.message').length;
+    lastReadMessageCount = lastMessageCount; // 初始化已读消息数为当前消息数
 
     // 监听用户滚动事件
     chatMessages.addEventListener('scroll', function() {
@@ -80,21 +82,26 @@ document.addEventListener('DOMContentLoaded', function() {
                 clearTimeout(scrollTimer);
             }
             
-            // 记录当前消息数量
-            lastMessageCount = chatMessages.querySelectorAll('.message').length;
+            // 当用户向上滚动时，记录当前消息数量为已读消息数
+            lastReadMessageCount = chatMessages.querySelectorAll('.message').length;
             
             // 不再自动重置userScrolled状态，只设置一个检测新消息的定时器
             scrollTimer = setTimeout(() => {
-                // 检测定时器触发时是否有新消息
+                // 检测定时器触发时是否有新消息（与用户已读消息数对比）
                 const currentMessageCount = chatMessages.querySelectorAll('.message').length;
-                // 只有当有新消息时才重置滚动状态并滚动到底部
-                if (currentMessageCount > lastMessageCount) {
+                // 只有当有真正的新消息（超过用户已读过的消息）时才重置滚动状态并滚动到底部
+                if (currentMessageCount > lastReadMessageCount) {
                     userScrolled = false;
                     chatMessages.scrollTop = chatMessages.scrollHeight;
-                    // 更新消息计数
-                    lastMessageCount = currentMessageCount;
+                    // 更新已读消息计数
+                    lastReadMessageCount = currentMessageCount;
                 }
+                // 始终更新总消息计数
+                lastMessageCount = currentMessageCount;
             }, 2000);
+        } else {
+            // 当用户滚动到底部或接近底部时，更新已读消息计数
+            lastReadMessageCount = chatMessages.querySelectorAll('.message').length;
         }
     });
 
@@ -103,13 +110,11 @@ document.addEventListener('DOMContentLoaded', function() {
         // 只有当用户没有主动滚动时，才自动滚动到底部
         if (!userScrolled) {
             chatMessages.scrollTop = chatMessages.scrollHeight;
-        } else {
-            // 如果用户已滚动，检查是否应该更新lastMessageCount
-            const currentMessageCount = chatMessages.querySelectorAll('.message').length;
-            if (currentMessageCount > lastMessageCount) {
-                lastMessageCount = currentMessageCount;
-            }
-        }
+            // 更新已读消息计数
+            lastReadMessageCount = chatMessages.querySelectorAll('.message').length;
+        } 
+        // 更新消息总数
+        lastMessageCount = chatMessages.querySelectorAll('.message').length;
     }
 
     // API配置
@@ -579,6 +584,11 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // 更新消息计数
         lastMessageCount = chatMessages.querySelectorAll('.message').length;
+        
+        // 如果用户没有主动滚动，则同时更新已读消息计数
+        if (!userScrolled) {
+            lastReadMessageCount = lastMessageCount;
+        }
         
         // 使用改进的滚动函数
         scrollToBottom();
@@ -1105,7 +1115,12 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // 更新消息计数
         lastMessageCount = chatMessages.querySelectorAll('.message').length;
-
+        
+        // 如果用户没有主动滚动，则同时更新已读消息计数
+        if (!userScrolled) {
+            lastReadMessageCount = lastMessageCount;
+        }
+        
         let finalUserInput = userInput;
         if (contextMode) {
             const recentMessages = currentChat.messages.slice(-20);
@@ -1172,9 +1187,15 @@ document.addEventListener('DOMContentLoaded', function() {
                                 
                                 // 流式响应也考虑新消息，如果用户已滚动，则更新消息数量而不自动滚动
                                 if (userScrolled) {
-                                    // 检查是否有新消息，更新lastMessageCount
+                                    // 检查是否有真正的新消息（超过用户已读取的消息数量）
                                     const currentMessageCount = chatMessages.querySelectorAll('.message').length;
-                                    if (currentMessageCount > lastMessageCount) {
+                                    
+                                    // 只有在消息总数超过已读消息数时才自动滚动
+                                    if (currentMessageCount > lastReadMessageCount) {
+                                        // 重要：我们不会自动重置userScrolled状态
+                                        // 只有在计时器触发时才可能重置
+                                        
+                                        // 但我们更新消息计数
                                         lastMessageCount = currentMessageCount;
                                     }
                                 }
