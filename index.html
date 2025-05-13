@@ -290,7 +290,7 @@
             color: white;  /* 文字颜色改为白色以提高可读性 */
         }
         .ai-message .message-content {
-            background-color: #f5f5f5;  /* AI消息使用浅灰色背景 */
+            background-color: #ffffff;  /* 修改为纯白色背景 */
             color: #333;
         }
         /* 确保消息内容中的段落没有多余的边距 */
@@ -378,49 +378,48 @@
                 <span>SMT-AI</span>
             </div>
             <div class="menu-item new-chat" id="newChat">
-                <i class="fas fa-plus"></i>
-                <span>新对话</span>
+                <div class="menu-item-icon"><i class="fas fa-plus"></i></div>
+                <div class="menu-item-content">
+                    <span>新对话</span>
+                    <small class="click-hint">点击创建新的聊天</small>
+                </div>
             </div>
             <div class="menu-items">
-                <div class="menu-item" data-prompt="帮我搜索：">
-                    <i class="fas fa-search"></i>
-                    <span>AI 搜索</span>
+                <div class="menu-item feature-new" data-prompt="INPUT = {focus}&#10;OUTPUT = (description) n![MG](https:// image.pollinations.ai/prompt/{description})&#10;{description} = {focusDetailed},%20 adjective1}&#10;%20{adjective2},%20{visu}&#10;%20{visualStyle3} %20{artistReference}&#10;INPUT = ">
+                    <div class="menu-item-icon"><i class="fas fa-image"></i></div>
+                    <div class="menu-item-content">
+                        <span>AI 生图<div class="feature-badge" style="margin-left: 8px;">NEW</div></span>
+                    </div>
                 </div>
                 <div class="menu-item" data-prompt="帮我写作：">
-                    <i class="fas fas fa-book"></i>
-                    <span>AI 写作</span>
+                    <div class="menu-item-icon"><i class="fas fa-book"></i></div>
+                    <div class="menu-item-content">
+                        <span>AI 写作</span>
+                    </div>
                 </div>
                 <div class="menu-item" data-prompt="帮我编程代码：">
-                    <i class="fas fa-code"></i>
-                    <span>AI 编程</span>
-                </div>
-                <div class="menu-item" data-prompt="头脑风暴：">
-                    <i class="fas fa-globe"></i>
-                    <span>AI 头脑风暴</span>
+                    <div class="menu-item-icon"><i class="fas fa-code"></i></div>
+                    <div class="menu-item-content">
+                        <span>AI 编程</span>
+                    </div>
                 </div>
                 <div class="menu-item" data-prompt="帮我翻译：">
-                    <i class="fas fa-language"></i>
-                    <span>AI 翻译</span>
+                    <div class="menu-item-icon"><i class="fas fa-language"></i></div>
+                    <div class="menu-item-content">
+                        <span>AI 翻译</span>
+                    </div>
                 </div>
                 <div class="menu-item" data-prompt="帮我优化：">
-                    <i class="fas fa-magic"></i>
-                    <span>AI 优化</span>
+                    <div class="menu-item-icon"><i class="fas fa-magic"></i></div>
+                    <div class="menu-item-content">
+                        <span>AI 优化</span>
+                    </div>
                 </div>
                 <div class="menu-item" data-prompt="帮我总结：">
-                    <i class="fas fa-compress"></i>
-                    <span>AI 总结</span>
-                </div>
-                <div class="menu-item" data-prompt="帮我生成大纲：">
-                     <i class="fas fa-sitemap"></i>
-                     <span>AI 大纲</span>
-                </div>
-                <div class="menu-item" data-prompt="帮我生成PPT思路：">
-                    <i class="fas fa-lightbulb"></i>
-                    <span>AI PPT思路</span>
-                </div>
-                <div class="menu-item" data-prompt="帮我用ASCII艺术代码画图：">
-                    <i class="fas fa-palette"></i>
-                    <span>AI 代码画图</span>
+                    <div class="menu-item-icon"><i class="fas fa-compress"></i></div>
+                    <div class="menu-item-content">
+                        <span>AI 总结</span>
+                    </div>
                 </div>
             </div>
             <div class="chat-history" id="chatHistory">
@@ -455,7 +454,7 @@
                         
                         <!-- 主要内容介绍 -->
                         <div class="welcome-content">
-                            <p class="welcome-text">我是您的AI助手，可以帮您解答问题、创作内容、编写代码，支持数学公式和深度思考～</p>
+                            <p class="welcome-text">我是您的AI助手，可以帮您解答问题、创作内容、编写代码，还能为您生成精美图片～</p>
                             
                             <!-- 能力展示区 -->
                             <div class="welcome-abilities">
@@ -483,11 +482,11 @@
                                             <p>代码生成和问题解决</p>
                                         </div>
                                     </div>
-                                    <div class="welcome-ability-item">
-                                        <div class="ability-icon"><i class="fas fa-square-root-alt"></i></div>
+                                    <div class="welcome-ability-item feature-highlight">
+                                        <div class="ability-icon"><i class="fas fa-image"></i></div>
                                         <div class="ability-text">
-                                            <h4>数学支持</h4>
-                                            <p>公式渲染和计算能力</p>
+                                            <h4>AI生图 <span class="mini-badge">NEW</span></h4>
+                                            <p>创建精美的AI生成图片</p>
                                         </div>
                                     </div>
                                 </div>
@@ -501,7 +500,7 @@
                                 <div class="tech-badge-text">AI驱动 <span class="tech-dot"></span> Deepseek R1</div>
                             </div>
                             <div class="welcome-tips">
-                                <i class="fas fa-lightbulb"></i> 提示：使用"深度思考(R1)"模式以获得更全面的回答
+                                <i class="fas fa-lightbulb"></i> 提示：点击左侧"AI 生图"，体验全新图像生成功能
                             </div>
                         </div>
                         
@@ -565,5 +564,7 @@
     <script src="copy-code.js"></script>
     <script src="mobile-adapter.js"></script>
     <script src="auto-refresh.js"></script>
+    <!-- 添加新对话按钮修复脚本 -->
+    <script src="fix-newchat.js"></script>
 </body>
 </html>

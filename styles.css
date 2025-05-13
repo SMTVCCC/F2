@@ -372,6 +372,37 @@ body {
     overflow: hidden;
 }
 
+.new-chat.clicked {
+    transform: scale(0.95);
+    box-shadow: 0 2px 8px rgba(255, 105, 180, 0.3);
+}
+
+.new-chat:hover, .new-chat:focus {
+    background-color: rgba(255, 192, 203, 0.15);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 105, 180, 0.1);
+}
+
+.new-chat::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg, 
+        rgba(255, 255, 255, 0) 0%, 
+        rgba(255, 192, 203, 0.3) 50%, 
+        rgba(255, 255, 255, 0) 100%
+    );
+    transition: all 0.5s ease;
+}
+
+.new-chat:hover::after {
+    left: 100%;
+}
+
 .new-chat span {
     color: white;
     font-weight: 500;
@@ -623,7 +654,7 @@ body {
 }
 
 .ai-message .message-content {
-    background: rgba(255, 255, 255, 0.95);
+    background: #ffffff; /* 修改为纯白色 */
     border: 1px solid rgba(218, 112, 214, 0.15);
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
     border-top-left-radius: 4px;
@@ -638,8 +669,8 @@ body {
     right: 0;
     height: 60px;
     background: linear-gradient(180deg, 
-        rgba(255, 182, 193, 0.05) 0%, 
-        rgba(255, 255, 255, 0) 100%);
+        rgba(255, 255, 255, 0.5) 0%, 
+        rgba(255, 255, 255, 0) 100%); /* 修改为从白色到透明的渐变 */
     pointer-events: none;
     border-radius: 20px 20px 0 0;
 }
@@ -718,7 +749,26 @@ body {
 
 .input-container:focus-within {
     border-color: transparent;
-    box-shadow: 0 0 0 2px rgba(255, 105, 180, 0.3), 0 8px 20px rgba(0, 0, 0, 0.05);
+    box-shadow: 
+        0 0 0 2px rgba(255, 105, 180, 0.3), 
+        0 8px 25px rgba(255, 105, 180, 0.15),
+        0 0 30px rgba(255, 105, 180, 0.1);
+    animation: inputGlow 2s infinite alternate;
+}
+
+@keyframes inputGlow {
+    0% {
+        box-shadow: 
+            0 0 0 2px rgba(255, 105, 180, 0.3), 
+            0 8px 25px rgba(255, 105, 180, 0.15),
+            0 0 20px rgba(255, 105, 180, 0.1);
+    }
+    100% {
+        box-shadow: 
+            0 0 0 3px rgba(255, 105, 180, 0.4), 
+            0 8px 30px rgba(255, 105, 180, 0.3),
+            0 0 40px rgba(255, 105, 180, 0.2);
+    }
 }
 
 .input-container:focus-within::after {
@@ -728,11 +778,12 @@ body {
     left: -1px;
     right: -1px;
     bottom: -1px;
-    background: var(--candy-gradient);
+    background: linear-gradient(135deg, #FF69B4, #FF1493, #FFB6C1, #FF69B4);
+    background-size: 400% 400%;
     border-radius: 19px;
     z-index: -1;
     opacity: 0.7;
-    animation: borderPulse 2s infinite;
+    animation: borderPulse 3s infinite, borderGradient 15s infinite;
 }
 
 @keyframes borderPulse {
@@ -1872,7 +1923,7 @@ body {
     background: linear-gradient(
         90deg, 
         rgba(255, 255, 255, 0) 0%, 
-        rgba(255, 182, 193, 0.2) 50%, 
+        rgba(255, 255, 255, 0.5) 50%, 
         rgba(255, 255, 255, 0) 100%
     );
     animation: shimmer 2s infinite;
@@ -1897,7 +1948,7 @@ body {
 
 /* 美化欢迎卡片样式 - 全新设计 */
 .welcome-card {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.97), rgba(255, 250, 252, 0.97));
+    background: #ffffff !important; /* 改为纯白色 */
     border: none !important;
     box-shadow: 0 15px 40px rgba(255, 105, 180, 0.15), 0 5px 15px rgba(0, 0, 0, 0.05) !important;
     position: relative;
@@ -2383,4 +2434,479 @@ body {
 
 .android-device .chat-messages {
     padding-bottom: 70px;
+}
+
+/* AI生成图片样式 */
+.image-container {
+    margin: 15px 0;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.image-container img {
+    max-width: 100%;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.image-container img:hover {
+    transform: scale(1.02);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.image-container a {
+    display: inline-block;
+    position: relative;
+}
+
+.image-container a::after {
+    content: "查看原图";
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background-color: rgba(255, 105, 180, 0.8);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.image-container a:hover::after {
+    opacity: 1;
+}
+
+.image-caption {
+    margin-top: 8px;
+    font-size: 14px;
+    color: #777;
+    font-style: italic;
+    position: relative;
+}
+
+.image-caption::before {
+    content: '✨';
+    margin-right: 5px;
+}
+
+/* AI生图输入提示样式 */
+.image-generation-input {
+    color: #FF69B4 !important;
+    font-weight: 500 !important;
+    font-style: italic !important;
+}
+
+/* 菜单项新布局样式 */
+.menu-item-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 35px;
+    height: 35px;
+}
+
+.menu-item-content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+/* 新功能标签样式 */
+.feature-badge {
+    font-size: 11px;
+    padding: 2px 6px;
+    background: linear-gradient(90deg, #FF1493, #FF69B4);
+    color: white;
+    border-radius: 10px;
+    margin-top: 4px;
+    display: inline-block;
+    font-weight: bold;
+    box-shadow: 0 2px 5px rgba(255, 20, 147, 0.3);
+    animation: pulseBadge 1.5s infinite;
+    width: fit-content;
+    letter-spacing: 0.5px;
+}
+
+@keyframes pulseBadge {
+    0%, 100% { opacity: 0.9; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.05); }
+}
+
+/* 新功能菜单项样式 */
+.menu-item.feature-new {
+    background: linear-gradient(135deg, rgba(255, 105, 180, 0.1), rgba(255, 20, 147, 0.05));
+    border-left: 3px solid #FF1493;
+    position: relative;
+    overflow: hidden;
+}
+
+.menu-item.feature-new::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, 
+        rgba(255, 255, 255, 0) 0%, 
+        rgba(255, 255, 255, 0.5) 50%, 
+        rgba(255, 255, 255, 0) 100%);
+    transform: translateX(-100%);
+    animation: shimmerFeature 3s infinite;
+    pointer-events: none;
+}
+
+@keyframes shimmerFeature {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+.menu-item.feature-new i {
+    color: #FF1493;
+    animation: iconFloatNew 2s infinite ease-in-out;
+}
+
+@keyframes iconFloatNew {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px) scale(1.1); }
+}
+
+.menu-item.feature-new:hover {
+    background: linear-gradient(135deg, #FF1493, #FF69B4);
+    transform: translateX(5px) scale(1.02);
+    border-left: 3px solid #FF1493;
+    box-shadow: 0 5px 15px rgba(255, 20, 147, 0.2);
+}
+
+.menu-item.feature-new:hover .feature-badge {
+    background: white;
+    color: #FF1493;
+}
+
+.sidebar.collapsed .feature-badge {
+    display: none;
+}
+
+/* 调整折叠侧边栏的菜单样式 */
+.sidebar.collapsed .menu-item-content {
+    display: none;
+}
+
+.sidebar.collapsed .menu-item-icon {
+    width: 100%;
+    margin: 0;
+}
+
+.sidebar.collapsed .menu-item {
+    justify-content: center;
+    padding: 12px 0;
+}
+
+/* 菜单项的新悬停效果 */
+.menu-item:hover .menu-item-icon i {
+    transform: scale(1.2) rotate(10deg);
+}
+
+/* 给生图功能添加闪光效果 */
+.menu-item.feature-new .menu-item-icon::after {
+    content: '';
+    position: absolute;
+    width: 35px;
+    height: 35px;
+    background: radial-gradient(circle, rgba(255, 20, 147, 0.4) 0%, rgba(255, 20, 147, 0) 70%);
+    border-radius: 50%;
+    animation: glowCircle 2s infinite;
+    pointer-events: none;
+}
+
+@keyframes glowCircle {
+    0%, 100% { transform: scale(0.8); opacity: 0.3; }
+    50% { transform: scale(1.2); opacity: 0.7; }
+}
+
+/* 给折叠时的生图图标添加特殊样式 */
+.sidebar.collapsed .menu-item.feature-new {
+    position: relative;
+}
+
+.sidebar.collapsed .menu-item.feature-new::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 8px;
+    height: 8px;
+    background: #FF1493;
+    border-radius: 50%;
+    box-shadow: 0 0 5px #FF1493;
+    animation: pulseDot 1.5s infinite;
+}
+
+@keyframes pulseDot {
+    0%, 100% { transform: scale(1); opacity: 0.7; }
+    50% { transform: scale(1.3); opacity: 1; }
+}
+
+/* 欢迎卡片新增功能样式 */
+.feature-highlight {
+    background: linear-gradient(135deg, rgba(255, 20, 147, 0.08), rgba(255, 105, 180, 0.05)) !important;
+    border: 1px solid rgba(255, 20, 147, 0.15) !important;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(255, 20, 147, 0.1) !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.feature-highlight::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, 
+        rgba(255, 255, 255, 0) 0%, 
+        rgba(255, 255, 255, 0.5) 50%, 
+        rgba(255, 255, 255, 0) 100%);
+    transform: translateX(-100%);
+    animation: shimmerHighlight 3s infinite;
+    pointer-events: none;
+}
+
+@keyframes shimmerHighlight {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+.highlight-icon {
+    background: linear-gradient(135deg, rgba(255, 20, 147, 0.15), rgba(255, 105, 180, 0.1)) !important;
+    animation: pulseIcon 2s infinite alternate;
+}
+
+@keyframes pulseIcon {
+    0% { transform: scale(1); box-shadow: 0 0 0 rgba(255, 20, 147, 0.1); }
+    100% { transform: scale(1.1); box-shadow: 0 0 15px rgba(255, 20, 147, 0.3); }
+}
+
+.mini-badge {
+    font-size: 9px;
+    padding: 2px 5px;
+    background: linear-gradient(90deg, #FF1493, #FF69B4);
+    color: white;
+    border-radius: 10px;
+    font-weight: bold;
+    box-shadow: 0 2px 5px rgba(255, 20, 147, 0.3);
+    animation: pulseMini 1.5s infinite;
+    display: inline-block;
+    vertical-align: top;
+    margin-left: 5px;
+    letter-spacing: 0.5px;
+    position: relative;
+    top: -5px;
+}
+
+@keyframes pulseMini {
+    0%, 100% { opacity: 0.9; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.1); }
+}
+
+/* 欢迎卡片内容优化 */
+.welcome-text {
+    font-size: 17px !important;
+    line-height: 1.7 !important;
+    margin-bottom: 25px !important;
+    background: linear-gradient(90deg, #333, #555);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    position: relative;
+}
+
+.welcome-text::after {
+    content: '✨';
+    position: absolute;
+    right: 0;
+    bottom: -5px;
+    font-size: 20px;
+    -webkit-text-fill-color: #FF69B4;
+    opacity: 0.7;
+    animation: sparkle 2s infinite;
+}
+
+@keyframes sparkle {
+    0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.7; }
+    50% { transform: scale(1.2) rotate(15deg); opacity: 1; }
+}
+
+/* 欢迎卡片AI生图能力突出显示 */
+.feature-highlight:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 30px rgba(255, 20, 147, 0.2) !important;
+    border: 1px solid rgba(255, 20, 147, 0.3) !important;
+    z-index: 1;
+}
+
+.feature-highlight:hover .highlight-icon {
+    transform: scale(1.2);
+    background: linear-gradient(135deg, rgba(255, 20, 147, 0.2), rgba(255, 105, 180, 0.15)) !important;
+}
+
+.feature-highlight:hover h4 {
+    color: #FF1493;
+}
+
+/* 底部提示增强 */
+.welcome-tips {
+    background: linear-gradient(90deg, rgba(255, 20, 147, 0.05), rgba(255, 105, 180, 0.02));
+    padding: 8px 15px;
+    border-radius: 25px;
+    border: 1px solid rgba(255, 20, 147, 0.1);
+    box-shadow: 0 3px 10px rgba(255, 20, 147, 0.05);
+}
+
+.welcome-tips i {
+    color: #FF1493 !important;
+    animation: tipGlow 2s infinite alternate;
+}
+
+@keyframes tipGlow {
+    0% { text-shadow: 0 0 0 rgba(255, 20, 147, 0); }
+    100% { text-shadow: 0 0 10px rgba(255, 20, 147, 0.5); }
+}
+
+@keyframes borderGradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* 添加底部光晕效果 */
+.input-container:focus-within::before {
+    content: '';
+    position: absolute;
+    bottom: -15px;
+    left: 10%;
+    right: 10%;
+    height: 15px;
+    background: radial-gradient(ellipse at center, rgba(255, 105, 180, 0.4) 0%, rgba(255, 105, 180, 0) 70%);
+    filter: blur(5px);
+    z-index: -1;
+    animation: bottomGlow 2s infinite alternate;
+    border-radius: 50%;
+}
+
+@keyframes bottomGlow {
+    0% { opacity: 0.5; transform: scaleX(0.9); }
+    100% { opacity: 0.8; transform: scaleX(1.1); }
+}
+
+/* 输入框文本光标改为粉色 */
+#messageInput {
+    caret-color: #FF69B4;
+}
+
+/* 聊天历史样式 */
+.chat-history {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: calc(100vh - 410px);
+    overflow-y: auto;
+    margin-top: 15px;
+    margin-bottom: 10px;
+    padding-right: 5px;
+    position: relative;
+}
+
+.chat-history::-webkit-scrollbar {
+    width: 4px;
+}
+
+.chat-history::-webkit-scrollbar-track {
+    background: rgba(241, 241, 241, 0.5);
+    border-radius: 4px;
+}
+
+.chat-history::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, var(--candy-light-pink), var(--candy-light-purple));
+    border-radius: 4px;
+}
+
+.chat-history::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, var(--candy-pink), var(--candy-purple));
+}
+
+.history-item {
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: var(--text-dark);
+    position: relative;
+    overflow: hidden;
+    border: 1px solid transparent;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.history-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 3px;
+    background: var(--candy-gradient);
+    opacity: 0;
+    transition: all 0.3s ease;
+    border-radius: 3px;
+}
+
+.history-item:hover {
+    background: rgba(255, 255, 255, 0.9);
+    transform: translateX(3px);
+    border-color: rgba(255, 105, 180, 0.2);
+    box-shadow: 0 4px 8px rgba(255, 105, 180, 0.1);
+}
+
+.history-item:hover::before {
+    opacity: 0.6;
+}
+
+.history-item.active {
+    background: rgba(255, 255, 255, 0.95);
+    transform: translateX(5px);
+    border-color: rgba(255, 105, 180, 0.3);
+    box-shadow: 0 5px 12px rgba(255, 105, 180, 0.15);
+}
+
+.history-item.active::before {
+    opacity: 1;
+}
+
+.history-timestamp {
+    font-size: 10px;
+    color: var(--text-lighter);
+    opacity: 0.8;
+    font-style: italic;
+}
+
+.click-hint {
+    font-size: 11px;
+    color: #999;
+    margin-top: 3px;
+    display: block;
+    opacity: 0.7;
+    font-weight: normal;
+}
+
+.new-chat:hover .click-hint {
+    color: #FF69B4;
+    opacity: 1;
 }

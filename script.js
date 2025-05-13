@@ -19,11 +19,47 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('[调试] 发送按钮HTML:', sendButton ? sendButton.outerHTML : '不存在');
     console.log('[调试] messageInput元素:', !!messageInput);
     console.log('[调试] chatMessages元素:', !!chatMessages);
+    console.log('[调试] 新对话按钮元素:', !!newChatButton);
+    console.log('[调试] 新对话按钮HTML:', newChatButton ? newChatButton.outerHTML : '不存在');
 
     if (!sendButton) {
         console.error('[错误] 发送按钮未找到！');
         return;
     }
+
+    // 确保即使没有找到newChatButton，也添加一个行内点击事件到任何具有指定选择器的元素
+    const initNewChatButton = () => {
+        const button = document.getElementById('newChat') || document.querySelector('.new-chat');
+        if (button) {
+            console.log('[调试] 找到新对话按钮，添加内联点击事件');
+            
+            // 行内的直接点击事件 (兼容性最强的方式)
+            button.onclick = function(e) {
+                console.log('[调试] 新对话按钮被点击（行内事件）');
+                e.preventDefault();
+                window.location.reload(true);
+                return false;
+            };
+            
+            // 同时添加标准addEventListener
+            button.addEventListener('click', function(e) {
+                console.log('[调试] 新对话按钮被点击（添加的事件）');
+                createNewChat();
+                e.stopPropagation();
+            }, true); // 使用捕获阶段
+            
+            // 添加直接的HTML属性
+            button.setAttribute('onclick', "window.location.reload(true); return false;");
+        } else {
+            console.error('[错误] 无法找到新对话按钮');
+        }
+    };
+    
+    // 初始化新对话按钮
+    initNewChatButton();
+    
+    // 5秒后再次尝试初始化，以防DOM延迟加载
+    setTimeout(initNewChatButton, 5000);
 
     // 添加自动滚动控制变量
     let userScrolled = false;
@@ -104,8 +140,22 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error('[错误] 未找到深度思考按钮元素');
     }
 
+    // 安全地从localStorage获取数据
+    function safeGetFromLocalStorage(key, defaultValue) {
+        try {
+            const data = localStorage.getItem(key);
+            if (data === null) return defaultValue;
+            return JSON.parse(data);
+        } catch (error) {
+            console.error(`[错误] 从localStorage获取${key}失败:`, error);
+            return defaultValue;
+        }
+    }
+
     // 存储所有对话历史
-    let allChats = JSON.parse(localStorage.getItem('allChats')) || [];
+    let allChats = safeGetFromLocalStorage('allChats', []);
+    console.log('[调试] 从localStorage加载聊天记录，条数:', allChats.length);
+    
     // 当前对话ID
     let currentChatId = Date.now();
     // 当前对话内容
@@ -141,52 +191,105 @@ document.addEventListener('DOMContentLoaded', function() {
         confirmDialog.classList.remove('show');
     }
 
-    // 创建新对话
+    // 简化创建新对话函数，使用更直接有效的刷新方式
     function createNewChat() {
-        if (currentChat.messages.length > 1) {
-            allChats.push(currentChat);
-            addChatToHistory(currentChat);
-            saveChatsToStorage();
+        console.log('[调试] 创建新对话：通过不同方式刷新页面');
+        try {
+            // 方法1：使用window.location.reload(true)强制从服务器刷新
+            window.location.reload(true);
+        } catch (error) {
+            console.error('[错误] 刷新方法1失败:', error);
+            try {
+                // 方法2：替换当前URL（去除可能的哈希部分）
+                window.location.href = window.location.href.split('#')[0];
+            } catch (error2) {
+                console.error('[错误] 刷新方法2失败:', error2);
+                try {
+                    // 方法3：使用history API
+                    window.history.go(0);
+                } catch (error3) {
+                    console.error('[错误] 所有刷新方法都失败');
+                    alert('请手动刷新页面以创建新对话');
+                }
+            }
         }
-        chatMessages.innerHTML = `
-            <div class="message ai-message">
-                <div class="message-content">
-                    <h2>Hi，我是SMTAI<span class="candy-loading">🍬</span></h2>
-                </div>
-            </div>
-        `;
-        currentChatId = Date.now();
-        currentChat = {
-            id: currentChatId,
-            messages: [{
-                type: 'ai',
-                content: 'Hi，我是SMTAI'
-            }]
-        };
     }
 
     // 添加对话到历史记录栏
     function addChatToHistory(chat) {
+        // 避免重复添加
+        const existingItem = document.querySelector(`.history-item[data-chat-id="${chat.id}"]`);
+        if (existingItem) {
+            return;
+        }
+
+        // 获取有意义的预览文本
+        let previewText = "";
+        // 寻找第一条用户消息作为预览
+        const firstUserMessage = chat.messages.find(m => m.type === 'user');
+        if (firstUserMessage) {
+            // 清理消息内容，移除HTML标签和命令代码部分
+            let cleanText = firstUserMessage.content;
+            
+            // 如果是生图命令，提取描述部分
+            if (cleanText.includes('INPUT = {focus}') && cleanText.includes('pollinations.ai')) {
+                const inputIndex = cleanText.lastIndexOf('INPUT =');
+                if (inputIndex !== -1) {
+                    cleanText = "AI生图: " + cleanText.substring(inputIndex + 8).trim();
+                }
+            }
+            
+            // 移除HTML标签
+            cleanText = cleanText.replace(/<[^>]*>/g, '');
+            
+            // 限制长度
+            previewText = cleanText.length > 25 ? cleanText.substring(0, 25) + '...' : cleanText;
+        } else {
+            previewText = "新对话";
+        }
+
+        // 创建历史条目
         const historyItem = document.createElement('div');
         historyItem.className = 'history-item';
-        historyItem.textContent = chat.messages[1]?.content.substring(0, 20) + '...';
+        historyItem.textContent = previewText;
         historyItem.dataset.chatId = chat.id;
-        historyItem.addEventListener('click', () => loadChat(chat));
+        
+        // 添加时间戳
+        const timestamp = document.createElement('div');
+        timestamp.className = 'history-timestamp';
+        timestamp.textContent = new Date(chat.id).toLocaleString('zh-CN', {
+            month: 'numeric',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: 'numeric'
+        });
+        historyItem.appendChild(timestamp);
+        
+        // 添加点击事件
+        historyItem.addEventListener('click', () => {
+            loadChat(chat);
+        });
+        
+        // 在列表开头插入
         chatHistory.insertBefore(historyItem, chatHistory.firstChild);
     }
 
     // 加载历史对话
     function loadChat(chat) {
+        // 如果当前对话有内容且未保存，先保存它
         if (currentChat.messages.length > 1) {
-            const existingIndex = allChats.findIndex(c => c.id === currentChat.id);
-            if (existingIndex === -1) {
-                allChats.push(currentChat);
-                addChatToHistory(currentChat);
-                saveChatsToStorage();
-            }
+            saveChatsToStorage();
         }
+        
+        // 加载选中的历史对话
         chatMessages.innerHTML = '';
-        chat.messages.forEach(message => {
+        
+        // 复制聊天对象以防止直接修改历史记录
+        currentChat = JSON.parse(JSON.stringify(chat));
+        currentChatId = currentChat.id;
+        
+        // 显示所有消息
+        currentChat.messages.forEach(message => {
             const messageElement = document.createElement('div');
             messageElement.className = `message ${message.type === 'user' ? 'user-message' : 'ai-message'}`;
             
@@ -200,6 +303,14 @@ document.addEventListener('DOMContentLoaded', function() {
             chatMessages.appendChild(messageElement);
         });
         
+        // 添加高亮样式到当前选中的历史条目
+        document.querySelectorAll('.history-item').forEach(item => {
+            item.classList.remove('active');
+            if (item.dataset.chatId == currentChat.id) {
+                item.classList.add('active');
+            }
+        });
+        
         // 全部加载完成后再渲染一次数学公式
         if (typeof MathJax !== 'undefined' && MathJax.typesetPromise) {
             MathJax.typesetPromise([chatMessages]).catch((err) => {
@@ -207,14 +318,42 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
         
-        currentChat = chat;
         // 滚动到最新消息
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 
     // 保存聊天记录到localStorage
     function saveChatsToStorage() {
-        localStorage.setItem('allChats', JSON.stringify(allChats));
+        // 检查当前对话是否已在allChats中
+        const existingIndex = allChats.findIndex(c => c.id === currentChat.id);
+        if (existingIndex !== -1) {
+            // 如果已存在，则更新它
+            allChats[existingIndex] = currentChat;
+        } else if (currentChat.messages.length > 1) {
+            // 如果不存在且有实际对话内容，则添加它
+            allChats.push({...currentChat});
+        }
+        // 保存到localStorage
+        try {
+            localStorage.setItem('allChats', JSON.stringify(allChats));
+            console.log('[调试] 保存聊天记录成功，条数:', allChats.length);
+        } catch (error) {
+            console.error('[错误] 保存聊天记录失败:', error);
+            // 如果存储空间不足，清理旧的聊天记录
+            if (error.name === 'QuotaExceededError' || error.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
+                console.log('[调试] 存储空间不足，清理旧聊天记录');
+                // 保留最新的10条聊天
+                if (allChats.length > 10) {
+                    allChats = allChats.slice(-10);
+                    try {
+                        localStorage.setItem('allChats', JSON.stringify(allChats));
+                        console.log('[调试] 清理后重新保存成功');
+                    } catch (e) {
+                        console.error('[错误] 清理后仍无法保存:', e);
+                    }
+                }
+            }
+        }
     }
 
     // 处理清空历史记录按钮点击
@@ -272,11 +411,21 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
+        // 处理生图命令，隐藏命令部分，只显示用户提供的描述
+        let displayMessage = message;
+        if (isUser && message.includes('INPUT = {focus}') && message.includes('pollinations.ai')) {
+            // 提取用户描述部分（在最后一个INPUT =之后的内容）
+            const inputIndex = message.lastIndexOf('INPUT =');
+            if (inputIndex !== -1) {
+                displayMessage = "生成图片: " + message.substring(inputIndex + 8).trim();
+            }
+        }
+
         const messageDiv = document.createElement('div');
         messageDiv.className = `message ${isUser ? 'user-message' : 'ai-message'}`;
         
         // 使用文本处理函数格式化消息内容
-        const formattedMessage = isUser ? message : replaceAIResponse(message);
+        const formattedMessage = isUser ? displayMessage : replaceAIResponse(displayMessage);
         
         messageDiv.innerHTML = `
             <div class="message-content">
@@ -291,8 +440,13 @@ document.addEventListener('DOMContentLoaded', function() {
         // 添加到当前聊天记录
         currentChat.messages.push({
             type: isUser ? 'user' : 'ai',
-            content: message
+            content: message // 保存原始消息，以便保持上下文功能正常
         });
+        
+        // 每次添加消息后保存聊天记录
+        if (!skipAIResponse) {
+            saveChatsToStorage();
+        }
         
         // 渲染数学公式
         if (typeof MathJax !== 'undefined' && MathJax.typesetPromise) {
@@ -404,6 +558,30 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // 记录是否为AI生图模式
+    let isGeneratingImage = false;
+
+    // 设置按钮状态（启用/禁用）
+    function setButtonState(button, enabled) {
+        if (enabled) {
+            button.classList.remove('disabled');
+            button.disabled = false;
+            button.style.opacity = '1';
+            button.style.cursor = 'pointer';
+        } else {
+            button.classList.add('disabled');
+            button.disabled = true;
+            button.style.opacity = '0.5';
+            button.style.cursor = 'not-allowed';
+            // 如果按钮是激活状态，先关闭它
+            if (button.classList.contains('active')) {
+                button.classList.remove('active');
+                if (button === contextToggle) contextMode = false;
+                if (button === perfectAnswerToggle) deepThinkingMode = false;
+            }
+        }
+    }
+
     // 发送消息的统一处理函数
     function handleSendMessage(event) {
         // 阻止默认行为
@@ -412,10 +590,31 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         console.log('[调试] 触发发送消息');
-        const message = messageInput.value.trim();
+        let message = messageInput.value.trim();
+        
+        // 检查是否是生图模式，如果是则恢复完整命令
+        if (isGeneratingImage && messageInput.hasAttribute('data-full-prompt')) {
+            const fullPrompt = messageInput.getAttribute('data-full-prompt');
+            // 获取用户输入的描述
+            const userDescription = message;
+            // 将用户描述替换到命令中的INPUT =后面
+            message = fullPrompt + userDescription;
+            // 清除数据属性
+            messageInput.removeAttribute('data-full-prompt');
+        }
         
         if (message) {
             console.log('[调试] 发送消息:', message);
+            
+            // 如果是生图模式，发送后解锁按钮
+            if (isGeneratingImage) {
+                isGeneratingImage = false;
+                // 移除特殊样式类
+                messageInput.classList.remove('image-generation-input');
+                // 恢复上下文和深度思考按钮的可用状态
+                setButtonState(contextToggle, true);
+                setButtonState(perfectAnswerToggle, true);
+            }
             
             // 检查是否触发彩蛋（匹配SMT或SMTAI，不区分大小写）
             const upperMessage = message.trim().toUpperCase();
@@ -449,6 +648,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     type: 'ai',
                     content: quickResponse
                 });
+                
+                // 保存聊天记录
+                saveChatsToStorage();
             } else {
                 // 如果没有快速回复，走正常的AI响应流程
                 addMessage(message, true);
@@ -518,7 +720,24 @@ document.addEventListener('DOMContentLoaded', function() {
                     messageInput ? `值: ${messageInput.value}` : ''
                 );
                 if (messageInput) {
+                    // 检查是否为AI生图功能
+                    if (prompt.includes('INPUT = {focus}') && prompt.includes('pollinations.ai')) {
+                        console.log('[调试] 检测到AI生图功能');
+                        // 将完整命令保存为数据属性，在发送时恢复
+                        messageInput.setAttribute('data-full-prompt', prompt);
+                        // 显示简化版本
+                        messageInput.value = "输入描述，生成AI图片...";
+                        // 添加样式类
+                        messageInput.classList.add('image-generation-input');
+                        // 选中全部文本方便用户直接输入
+                        messageInput.select();
+                        isGeneratingImage = true;
+                        // 关闭并锁定上下文和深度思考功能
+                        setButtonState(contextToggle, false);
+                        setButtonState(perfectAnswerToggle, false);
+                    } else {
                     messageInput.value = prompt;
+                    }
                     messageInput.focus();
                 }
             });
@@ -552,7 +771,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         });
                         break;
                     case 1: // V3大模型
-                        addMessage('你好我是SMT-AI，满血版Deepseek（R1）大模型开发的Ai对话智能体！', false, true);
+                        addMessage('你好我是SMT-AI，满血版Deepseek（R1）大模型开发的AI对话智能体！', false, true);
                         break;
                     case 2: // 有彩蛋
                         createCandyHeart();
@@ -583,7 +802,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // SMTAI的随机回复
         const smtaiResponses = [
             '您好！我是SMT-AI智能助手SAI。如您有任何任何问题，我会尽我所能为您提供帮助。',
-            '你好！我是SMT-AI大模型V3，专门设计用来提供信息、解答问题、协助学习和执行各种任务。我可以帮助用户获取知识、解决问题、进行语言翻译、提供建议等。我的目标是使信息获取更加便捷，帮助用户更高效地完成任务。如果你有任何问题或需要帮助，随时可以问我！'
+            '你好！我是SMT-AI大模型R1，专门设计用来提供信息、解答问题、协助学习和执行各种任务。我可以帮助用户获取知识、解决问题、进行语言翻译、提供建议等。我的目标是使信息获取更加便捷，帮助用户更高效地完成任务。如果你有任何问题或需要帮助，随时可以问我！'
         ];
         
         // 添加SMTAI的快捷回复（完全匹配，不区分大小写）
@@ -593,7 +812,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // 添加SMT彩蛋的快捷回复（匹配SMT，不区分大小写）
         if (standardMessage.toUpperCase() === 'SMT') {
-            return '爱心💗🍬送给你，继续和V3大模型的SMTAI聊天吧～';
+            return '爱心💗🍬送给你，继续和R1大模型的SMTAI聊天吧～';
         }
         
         if (timeQuestions.includes(standardMessage)) {
@@ -631,6 +850,17 @@ document.addEventListener('DOMContentLoaded', function() {
             return id;
         });
         
+        // 隐藏生图命令代码部分，但保留图片显示功能
+        // 先替换命令部分
+        const commandPattern = /INPUT = \{focus\}[\s\S]*?INPUT = ([\s\S]*?)(\n|$)/g;
+        text = text.replace(commandPattern, (match, userInput) => {
+            return ""; // 移除命令部分
+        });
+        
+        // 处理命令与图片链接之间的内容
+        const outputPattern = /OUTPUT = \(description\)[\s\S]*?\{description\} = \{focusDetailed\},[\s\S]*?\{artistReference\}/g;
+        text = text.replace(outputPattern, "");
+        
         // 处理代码块，保持代码格式和换行
         const codeBlockRegex = /```(\w*)\n([\s\S]*?)```/g;
         let formattedText = text.replace(codeBlockRegex, (match, language, code) => {
@@ -647,6 +877,18 @@ document.addEventListener('DOMContentLoaded', function() {
                     <button class="copy-button" onclick="copyCode(this)">复制代码</button>
                 </div>
                 <pre><code class="${language}">${escapedCode}</code></pre>
+            </div>`;
+        });
+        
+        // 处理AI生图的图片链接
+        // 匹配形如 n![MG](https://image.pollinations.ai/prompt/...)
+        const imgLinkRegex = /n!\[MG\]\((https:\/\/image\.pollinations\.ai\/prompt\/[^)]+)\)/g;
+        formattedText = formattedText.replace(imgLinkRegex, (match, imageUrl) => {
+            return `<div class="image-container">
+                <a href="${imageUrl}" target="_blank">
+                    <img src="${imageUrl}" alt="AI生成图片" style="max-width:100%;border-radius:8px;margin:10px 0;">
+                </a>
+                <div class="image-caption">AI生成图片</div>
             </div>`;
         });
         
@@ -717,7 +959,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         let finalUserInput = userInput;
         if (contextMode) {
-            const recentMessages = currentChat.messages.slice(-4);
+            const recentMessages = currentChat.messages.slice(-20);
             if (recentMessages.length > 0) {
                 const historyText = recentMessages
                     .map(msg => (msg.type === 'user' ? '用户' : 'AI') + '：' + msg.content)
@@ -865,14 +1107,20 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    newChatButton.addEventListener('click', () => {
-        console.log('[调试] 点击新建聊天按钮');
-        createNewChat();
+    // 添加全局事件委托，确保即使动态添加的元素也能响应点击
+    document.addEventListener('click', function(event) {
+        // 检查点击事件是否来自新对话按钮或其子元素
+        const target = event.target.closest('#newChat') || 
+                      (event.target.closest('.new-chat') && !event.target.closest('.new-chat').id);
+        
+        if (target) {
+            console.log('[调试] 通过全局事件委托捕获到新对话按钮点击');
+            event.preventDefault();
+            event.stopPropagation();
+            
+            // 直接刷新页面
+            window.location.reload(true);
+            return false;
+        }
     });
-
-    if (messageInput) {
-        messageInput.addEventListener('input', () => {
-            console.log('[调试] 输入框内容变化:', messageInput.value);
-        });
-    }
 });
