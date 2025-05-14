@@ -914,15 +914,34 @@ document.addEventListener('DOMContentLoaded', function() {
         chatMessages.appendChild(messageDiv);
         
         // 更新消息计数
+        const previousMessageCount = lastMessageCount;
         lastMessageCount = chatMessages.querySelectorAll('.message').length;
         
-        // 如果用户没有主动滚动，则同时更新已读消息计数
-        if (!userScrolled) {
-            lastReadMessageCount = lastMessageCount;
-        }
+        // 检测是否有新消息（相比上次记录的消息数）
+        const hasNewMessage = lastMessageCount > previousMessageCount;
         
-        // 使用改进的滚动函数
-        scrollToBottom();
+        // 如果有新消息，强制滚动到底部并重置用户滚动状态
+        if (hasNewMessage) {
+            // 暂时记录用户滚动状态
+            const wasUserScrolled = userScrolled;
+            
+            // 暂时重置用户滚动状态，强制滚动到底部
+            userScrolled = false;
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            lastReadMessageCount = lastMessageCount;
+            console.log('[调试] 检测到新消息，强制滚动到底部');
+            
+            // 短暂延迟后恢复用户滚动状态
+            setTimeout(() => {
+                userScrolled = wasUserScrolled;
+                console.log('[调试] 恢复用户滚动状态:', userScrolled ? '已滚动' : '未滚动');
+            }, 500);
+        }
+        // 否则使用默认滚动逻辑
+        else {
+            // 使用改进的滚动函数
+            scrollToBottom();
+        }
         
         // 添加到当前聊天记录
         currentChat.messages.push({
@@ -1444,13 +1463,21 @@ document.addEventListener('DOMContentLoaded', function() {
         
         chatMessages.appendChild(tempAiMessage);
         
+        // 强制滚动到底部，无视用户是否滚动过
+        const wasUserScrolled = userScrolled;
+        userScrolled = false;
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        
         // 更新消息计数
         lastMessageCount = chatMessages.querySelectorAll('.message').length;
+        lastReadMessageCount = lastMessageCount;
+        console.log('[调试] 创建AI响应元素，强制滚动到底部');
         
-        // 如果用户没有主动滚动，则同时更新已读消息计数
-        if (!userScrolled) {
-            lastReadMessageCount = lastMessageCount;
-        }
+        // 5秒后恢复用户的滚动状态，避免持续强制滚动
+        setTimeout(() => {
+            userScrolled = wasUserScrolled;
+            console.log('[调试] 恢复用户滚动状态:', userScrolled ? '已滚动' : '未滚动');
+        }, 500); // 缩短时间到500ms，确保只滚动一次
         
         let finalUserInput = userInput;
         if (contextMode) {
@@ -1513,23 +1540,16 @@ document.addEventListener('DOMContentLoaded', function() {
                                         <p>${modifiedResponse}</p>
                                     </div>
                                 `;
-                                // 使用改进的滚动函数
-                                scrollToBottom();
                                 
-                                // 流式响应也考虑新消息，如果用户已滚动，则更新消息数量而不自动滚动
-                                if (userScrolled) {
-                                    // 检查是否有真正的新消息（超过用户已读取的消息数量）
-                                    const currentMessageCount = chatMessages.querySelectorAll('.message').length;
-                                    
-                                    // 只有在消息总数超过已读消息数时才自动滚动
-                                    if (currentMessageCount > lastReadMessageCount) {
-                                        // 重要：我们不会自动重置userScrolled状态
-                                        // 只有在计时器触发时才可能重置
-                                        
-                                        // 但我们更新消息计数
-                                        lastMessageCount = currentMessageCount;
-                                    }
+                                // 使用常规滚动逻辑，不强制滚动
+                                // 只有当用户没有主动滚动时，才自动滚动到底部
+                                if (!userScrolled) {
+                                    chatMessages.scrollTop = chatMessages.scrollHeight;
                                 }
+                                
+                                // 更新消息计数
+                                const currentMessageCount = chatMessages.querySelectorAll('.message').length;
+                                lastMessageCount = currentMessageCount;
                                 
                                 // 触发MathJax重新渲染
                                 if (typeof MathJax !== 'undefined' && MathJax.typesetPromise) {
