@@ -1095,6 +1095,13 @@ document.addEventListener('DOMContentLoaded', function() {
             event.preventDefault();
         }
         
+        // 检查是否正在等待AI回复
+        if (sendButton.disabled) {
+            // 显示提示信息
+            showSendingTip();
+            return;
+        }
+        
         console.log('[调试] 触发发送消息');
         let message = messageInput.value.trim();
         
@@ -1164,12 +1171,62 @@ document.addEventListener('DOMContentLoaded', function() {
                 messageInput.style.borderColor = '#ccc';
                 messageInput.style.borderWidth = '1px';
                 messageInput.focus();
+                
+                // 禁用发送按钮并显示加载状态
+                setSendButtonLoading(true);
             }
         } else {
             console.log('[调试] 消息为空，不发送');
         }
     }
 
+    // 设置发送按钮加载状态
+    function setSendButtonLoading(isLoading) {
+        if (!sendButton) return;
+        
+        if (isLoading) {
+            sendButton.disabled = true;
+            sendButton.innerHTML = '<i class="fas fa-cog fa-spin"></i>';
+            sendButton.style.opacity = '0.6';
+            sendButton.style.cursor = 'not-allowed';
+        } else {
+            sendButton.disabled = false;
+            sendButton.innerHTML = '<i class="fas fa-arrow-up"></i>';
+            sendButton.style.opacity = '1';
+            sendButton.style.cursor = 'pointer';
+        }
+    }
+    
+    // 显示发送提示
+    function showSendingTip() {
+        // 创建提示元素
+        const tip = document.createElement('div');
+        tip.className = 'sending-tip';
+        tip.textContent = 'AI正在回复中，请稍候...';
+        tip.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 10000;
+            animation: fadeInOut 2s ease-in-out;
+        `;
+        
+        document.body.appendChild(tip);
+        
+        // 2秒后自动移除
+        setTimeout(() => {
+            if (tip.parentNode) {
+                tip.parentNode.removeChild(tip);
+            }
+        }, 2000);
+    }
+    
     // 为发送按钮添加点击事件（使用箭头函数以保持this的指向）
     if (sendButton) {
         sendButton.onclick = (event) => {
@@ -1398,7 +1455,75 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>`;
         });
         
-        // 处理普通文本的换行
+        // 优化文本格式：处理列表
+        // 处理有序列表
+        formattedText = formattedText.replace(/^(\d+\.)\s+(.+)$/gm, '<div class="list-item numbered"><span class="list-marker">$1</span> $2</div>');
+        
+        // 处理无序列表
+        formattedText = formattedText.replace(/^[-*+]\s+(.+)$/gm, '<div class="list-item bulleted"><span class="list-marker">•</span> $1</div>');
+        
+        // 处理标题
+        formattedText = formattedText.replace(/^#{3}\s+(.+)$/gm, '<h3 class="ai-heading">$1</h3>');
+        formattedText = formattedText.replace(/^#{2}\s+(.+)$/gm, '<h2 class="ai-heading">$1</h2>');
+        formattedText = formattedText.replace(/^#{1}\s+(.+)$/gm, '<h1 class="ai-heading">$1</h1>');
+        
+        // 处理引用块
+        formattedText = formattedText.replace(/^>\s+(.+)$/gm, '<blockquote class="ai-quote">$1</blockquote>');
+        
+        // 处理分隔线
+        formattedText = formattedText.replace(/^---+$/gm, '<hr class="ai-divider">');
+        
+        // 先处理特殊高光文字（使用反引号包围的内容），避免与表格内代码冲突
+        formattedText = formattedText.replace(/`([^`]+)`/g, '<span class="highlight-text">$1</span>');
+        
+        // 处理表格 - 改进的markdown表格解析
+        formattedText = formattedText.replace(/(\|[^\n]+\|[\s\n]*)+/g, (match) => {
+            // 更好地分割表格行，处理各种换行情况
+            const lines = match.trim().split(/\n+/).filter(line => line.trim() && line.includes('|'));
+            if (lines.length < 1) return match;
+            
+            let tableHTML = '<div class="ai-table-container"><table class="ai-table">';
+            let isFirstRow = true;
+            let hasValidRows = false;
+            
+            lines.forEach((line, index) => {
+                // 跳过分隔行（如 |---|---|）
+                if (line.includes('---') || line.includes('===')) {
+                    return;
+                }
+                
+                const cells = line.split('|')
+                    .map(cell => cell.trim())
+                    .filter((cell, i, arr) => i > 0 && i < arr.length - 1); // 移除首尾空元素
+                
+                if (cells.length === 0) return;
+                
+                hasValidRows = true;
+                // 第一个有效行作为表头
+                const tag = isFirstRow ? 'th' : 'td';
+                tableHTML += `<tr>${cells.map(cell => {
+                    // 处理单元格内的格式
+                    let cellContent = cell
+                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // 加粗
+                        .replace(/\*(.*?)\*/g, '<em>$1</em>') // 斜体
+                        .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>'); // 链接
+                    // 注意：反引号代码已经在前面处理为高光文字了
+                    return `<${tag}>${cellContent}</${tag}>`;
+                }).join('')}</tr>`;
+                
+                if (isFirstRow) isFirstRow = false;
+            });
+            
+            tableHTML += '</table></div>';
+            
+            // 如果没有有效行，返回原始内容
+            return hasValidRows ? tableHTML : match;
+        });
+        
+        // 高光文字已经在前面处理过了
+        
+        // 处理普通文本的换行，减少间距
+        formattedText = formattedText.replace(/\n\n+/g, '<br><br>'); // 多个换行变成两个
         formattedText = formattedText.replace(/\n/g, '<br>');
         
         // 处理加粗文本
@@ -1583,6 +1708,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     console.error('MathJax最终渲染错误:', err);
                 });
             }
+            
+            // 恢复发送按钮状态
+            setSendButtonLoading(false);
         } catch (error) {
             console.error('[错误] AI响应失败:', error);
             console.log('[调试] 错误类型:', error.name);
@@ -1626,6 +1754,9 @@ document.addEventListener('DOMContentLoaded', function() {
             };
             tempAiMessage.querySelector('.message-content').appendChild(retryButton);
             showThinkingTime(Date.now() - thinkingStartTime);
+            
+            // 恢复发送按钮状态
+            setSendButtonLoading(false);
         }
     }
 

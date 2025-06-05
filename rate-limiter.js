@@ -2,7 +2,9 @@
 class MessageRateLimiter {
     constructor() {
         this.storageKey = 'message_rate_limit';
-        this.maxMessagesPerDay = 10;
+        this.maxMessagesPerDay = 30; 
+        this.userIP = null;
+        this.isInitialized = false;
         this.init();
     }
 
@@ -10,7 +12,8 @@ class MessageRateLimiter {
         // 获取用户IP（模拟，实际应用中需要服务器端获取）
         this.getUserIP().then(ip => {
             this.userIP = ip;
-            this.checkRateLimit();
+            this.isInitialized = true;
+            // 初始化时不需要检查限制，只在发送消息时检查
         });
     }
 
@@ -66,12 +69,7 @@ class MessageRateLimiter {
             };
         }
         
-        // 检查是否需要重置（12小时后）
-        const timeSinceReset = now - data[this.userIP].lastReset;
-        if (timeSinceReset >= 12 * 60 * 60 * 1000) {
-            data[this.userIP].count = 0;
-            data[this.userIP].lastReset = now;
-        }
+        // 不自动重置，只有达到限制后通过倒计时手动重置
         
         // 清理过期数据
         this.cleanOldData(data);
@@ -89,7 +87,10 @@ class MessageRateLimiter {
 
     // 记录新消息
     recordMessage() {
-        if (!this.userIP) return false;
+        // 如果还没有初始化完成，允许发送
+        if (!this.isInitialized || !this.userIP) {
+            return true;
+        }
         
         const now = Date.now();
         const data = this.getStoredData();
@@ -102,12 +103,7 @@ class MessageRateLimiter {
             };
         }
         
-        // 检查是否需要重置（12小时后）
-        const timeSinceReset = now - data[this.userIP].lastReset;
-        if (timeSinceReset >= 12 * 60 * 60 * 1000) {
-            data[this.userIP].count = 0;
-            data[this.userIP].lastReset = now;
-        }
+        // 不自动重置，只有达到限制后通过倒计时手动重置
         
         if (data[this.userIP].count >= this.maxMessagesPerDay) {
             this.showRateLimitModal();
@@ -158,26 +154,19 @@ class MessageRateLimiter {
     getRemainingMessages() {
         if (!this.userIP) return this.maxMessagesPerDay;
         
-        const now = Date.now();
         const data = this.getStoredData();
         
         if (!data[this.userIP]) {
             return this.maxMessagesPerDay;
         }
         
-        // 检查是否需要重置（12小时后）
-        const timeSinceReset = now - data[this.userIP].lastReset;
-        if (timeSinceReset >= 12 * 60 * 60 * 1000) {
-            return this.maxMessagesPerDay;
-        }
-        
         return Math.max(0, this.maxMessagesPerDay - data[this.userIP].count);
     }
 
-    // 获取重置时间（12小时后）
+    // 获取重置时间（3分钟后）
     getResetTime() {
         const now = new Date();
-        const resetTime = new Date(now.getTime() + 12 * 60 * 60 * 1000); // 12小时后
+        const resetTime = new Date(now.getTime() + 3 * 60 * 1000); // 3分钟后
         return resetTime;
     }
 
@@ -199,7 +188,11 @@ class MessageRateLimiter {
                         <h3>🚫 消息发送限制</h3>
                     </div>
                     <div class="rate-limit-content">
-                        <p>您已达到发送上限（${this.maxMessagesPerDay}条/12小时）</p>
+                        <p>您已达到发送上限（${this.maxMessagesPerDay}条/3分钟）</p>
+                        <div class="qr-code-container">
+                            <img src="ds.png" alt="打赏二维码" class="qr-code-image" />
+                            <p class="qr-code-text">您的支持，是我们继续产出优质内容的最强引擎！❤️</p>
+                        </div>
                         <div class="countdown-container">
                             <div class="countdown-label">距离重置还有：</div>
                             <div class="countdown-timer" id="countdownTimer">计算中...</div>
@@ -230,10 +223,11 @@ class MessageRateLimiter {
             
             .rate-limit-modal {
                 background: white;
-                border-radius: 8px;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-                max-width: 400px;
+                border-radius: 12px;
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+                max-width: 600px;
                 width: 90%;
+                max-height: 500px;
                 overflow: hidden;
             }
             
@@ -252,36 +246,61 @@ class MessageRateLimiter {
             }
             
             .rate-limit-content {
-                padding: 20px;
+                padding: 30px;
                 text-align: center;
             }
             
-            .rate-limit-content p {
-                margin: 0 0 20px 0;
-                color: #6c757d;
-                font-size: 14px;
-                line-height: 1.5;
+            .qr-code-container {
+                margin: 20px 0;
+                padding: 20px;
+                background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+                border-radius: 8px;
+                border: 2px dashed #007bff;
             }
             
-            .countdown-container {
-                background: #f8f9fa;
-                border-radius: 4px;
-                padding: 15px;
-                border: 1px solid #e9ecef;
+            .qr-code-image {
+                width: 120px;
+                height: 120px;
+                margin-bottom: 10px;
+                border: 2px solid #007bff;
+                border-radius: 8px;
+                background: white;
+                padding: 5px;
             }
             
-            .countdown-label {
-                font-size: 14px;
-                color: #6c757d;
-                margin-bottom: 8px;
-            }
-            
-            .countdown-timer {
-                font-size: 20px;
-                font-weight: 600;
-                color: #dc3545;
-                font-family: monospace;
-            }
+            .qr-code-text {
+                 font-size: 14px;
+                 color: #007bff;
+                 font-weight: 500;
+                 margin: 0;
+             }
+             
+             .rate-limit-content p {
+                 margin: 0 0 20px 0;
+                 color: #6c757d;
+                 font-size: 14px;
+                 line-height: 1.5;
+             }
+             
+             .countdown-container {
+                 background: #f8f9fa;
+                 border-radius: 4px;
+                 padding: 15px;
+                 border: 1px solid #e9ecef;
+             }
+             
+             .countdown-label {
+                 font-size: 14px;
+                 color: #6c757d;
+                 margin-bottom: 8px;
+             }
+             
+             .countdown-timer {
+                 font-size: 20px;
+                 font-weight: 600;
+                 color: #dc3545;
+                 font-family: monospace;
+             }
             
             .rate-limit-footer {
                 padding: 20px;
@@ -306,16 +325,7 @@ class MessageRateLimiter {
             }
             
             .remaining-messages {
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                background: #007bff;
-                color: white;
-                padding: 8px 12px;
-                border-radius: 4px;
-                font-size: 12px;
-                z-index: 1000;
-                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                display: none !important;
             }
         `;
 
@@ -333,15 +343,16 @@ class MessageRateLimiter {
     startCountdown() {
         const data = this.getStoredData();
         const resetTime = this.getResetTime();
-        const totalDuration = 12 * 60 * 60 * 1000; // 12小时总时长
+        const totalDuration = 3 * 60 * 1000; // 3分钟总时长
         
         const updateCountdown = () => {
             const now = new Date();
             const diff = resetTime - now;
 
             if (diff <= 0) {
-                // 时间到了，重新加载页面
-                location.reload();
+                // 时间到了，重置消息计数
+                this.resetMessageCount();
+                this.closeModal();
                 return;
             }
 
@@ -359,6 +370,21 @@ class MessageRateLimiter {
         this.countdownInterval = setInterval(updateCountdown, 1000);
     }
 
+    // 重置消息计数
+    resetMessageCount() {
+        if (!this.userIP) return;
+        
+        const now = Date.now();
+        const data = this.getStoredData();
+        
+        if (data[this.userIP]) {
+            data[this.userIP].count = 0;
+            data[this.userIP].lastReset = now;
+        }
+        
+        this.saveStoredData(data);
+    }
+
     // 关闭弹窗
     closeModal() {
         const modal = document.getElementById('rateLimitModal');
@@ -374,27 +400,15 @@ class MessageRateLimiter {
         document.body.style.overflow = '';
     }
 
-    // 更新剩余次数显示
+    // 更新剩余次数显示 - 已禁用
     updateRemainingCount() {
-        let indicator = document.getElementById('remainingMessages');
-        if (!indicator) {
-            indicator = document.createElement('div');
-            indicator.id = 'remainingMessages';
-            indicator.className = 'remaining-messages';
-            document.body.appendChild(indicator);
+        // 移除剩余次数显示功能
+        const indicator = document.getElementById('remainingMessages');
+        if (indicator) {
+            indicator.remove();
         }
-        
-        const remaining = this.getRemainingMessages();
-        indicator.textContent = `剩余消息: ${remaining}/${this.maxMessagesPerDay}`;
-        
-        // 根据剩余数量改变颜色
-        if (remaining <= 2) {
-            indicator.style.background = 'rgba(231, 76, 60, 0.9)';
-        } else if (remaining <= 5) {
-            indicator.style.background = 'rgba(243, 156, 18, 0.9)';
-        } else {
-            indicator.style.background = 'rgba(52, 152, 219, 0.9)';
-        }
+        // 不再显示剩余次数提示
+        return;
     }
 
     // 拦截发送消息的函数
