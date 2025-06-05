@@ -450,7 +450,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // API配置
     const apiUrl = 'https://api.deepseek.com/chat/completions';
-    const apiKey = 'sk-250935b3510c4978a50d340c8bbd07c5';
+    const apiKey = process.env.DEEPSEEK_API_KEY;
     
     // 上下文模式配置
     let contextMode = false;
