@@ -2,7 +2,7 @@
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <title>SMT-AI智能体</title>
     <link rel="stylesheet" href="styles.css">
@@ -443,81 +443,17 @@
 
         <!-- 主聊天区域 -->
         <div class="main-content">
+            <!-- 移动端顶部导航栏 -->
+            <div class="mobile-top-nav">
+                <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="mobile-nav-title">Smitty AI</div>
+                <div class="mobile-nav-spacer"></div>
+            </div>
+            
             <div class="chat-messages" id="chatMessages">
-                <div class="message ai-message">
-                    <div class="message-content welcome-card">
-                        <!-- 顶部装饰元素 -->
-                        <div class="welcome-decoration-top"></div>
-                        
-                        <!-- 顶部信息区 -->
-                        <div class="welcome-header">
-                            <div class="welcome-title-group">
-                                <h2>Hi，我是SMTAI<span class="candy-loading">🍬</span></h2>
-                                <p class="welcome-subtitle">您的智能AI伙伴</p>
-                            </div>
-                            <div class="welcome-badge-group">
-                                <div class="welcome-model-badge">Deepseek R1</div>
-                                <div class="welcome-version-badge">V3.0324</div>
-                            </div>
-                        </div>
-                        
-                        <!-- 主要内容介绍 -->
-                        <div class="welcome-content">
-                            <p class="welcome-text">我是您的AI助手，可以帮您解答问题、创作内容、编写代码，还能为您生成精美图片～</p>
-                            
-                            <!-- 能力展示区 -->
-                            <div class="welcome-abilities">
-                                <div class="welcome-ability-row">
-                                    <div class="welcome-ability-item">
-                                        <div class="ability-icon"><i class="fas fa-brain"></i></div>
-                                        <div class="ability-text">
-                                            <h4>深度思考</h4>
-                                            <p>强大的推理和分析能力</p>
-                                        </div>
-                                    </div>
-                                    <div class="welcome-ability-item">
-                                        <div class="ability-icon"><i class="fas fa-pen-fancy"></i></div>
-                                        <div class="ability-text">
-                                            <h4>创意写作</h4>
-                                            <p>生成高质量文章内容</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="welcome-ability-row">
-                                    <div class="welcome-ability-item">
-                                        <div class="ability-icon"><i class="fas fa-code"></i></div>
-                                        <div class="ability-text">
-                                            <h4>编程助手</h4>
-                                            <p>代码生成和问题解决</p>
-                                        </div>
-                                    </div>
-                                    <div class="welcome-ability-item feature-highlight">
-                                        <div class="ability-icon"><i class="fas fa-image"></i></div>
-                                        <div class="ability-text">
-                                            <h4>AI生图 <span class="mini-badge">NEW</span></h4>
-                                            <p>创建精美的AI生成图片</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- 底部信息区 -->
-                        <div class="welcome-footer">
-                            <div class="tech-badge">
-                                <div class="tech-badge-icon"><i class="fas fa-bolt"></i></div>
-                                <div class="tech-badge-text">AI驱动 <span class="tech-dot"></span> Deepseek R1</div>
-                            </div>
-                            <div class="welcome-tips">
-                                <i class="fas fa-lightbulb"></i> 提示：点击左侧"AI 生图"，体验全新图像生成功能
-                            </div>
-                        </div>
-                        
-                        <!-- 装饰元素 -->
-                        <div class="welcome-decoration"></div>
-                        <div class="welcome-wave"></div>
-                    </div>
-                </div>
+                <!-- 聊天消息将在这里动态添加 -->
             </div>
             
             <!-- 输入区域 -->

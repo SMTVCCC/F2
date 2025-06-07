@@ -25,11 +25,14 @@ const MobileAdapter = {
                 sidebar.classList.add('collapsed');
             }
             
-            // 隐藏侧边栏展开按钮
+            // 隐藏原有的侧边栏展开按钮
             const toggleButton = document.getElementById('toggleSidebar');
             if (toggleButton) {
                 toggleButton.style.display = 'none';
             }
+            
+            // 设置移动端顶部导航栏的菜单按钮
+            this.setupMobileNavigation();
 
             this.setupMobileLayout(); // 保持遮罩层逻辑
             // this.setupTouchEvents(); // 移除，因为阻止缩放的代码已被注释
@@ -321,6 +324,39 @@ const MobileAdapter = {
         bottomButtons.appendChild(modelButtonsRow);
         if (rightButtons) {
             bottomButtons.appendChild(rightButtons);
+        }
+    },
+    
+    // 设置移动端顶部导航栏
+    setupMobileNavigation() {
+        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.querySelector('.mobile-overlay');
+        
+        if (mobileMenuToggle && sidebar) {
+            mobileMenuToggle.addEventListener('click', () => {
+                // 切换侧边栏显示状态
+                sidebar.classList.toggle('collapsed');
+                
+                // 显示/隐藏遮罩层
+                if (overlay) {
+                    if (sidebar.classList.contains('collapsed')) {
+                        overlay.style.display = 'none';
+                    } else {
+                        overlay.style.display = 'block';
+                    }
+                }
+            });
+        }
+        
+        // 点击遮罩层关闭侧边栏
+        if (overlay) {
+            overlay.addEventListener('click', () => {
+                if (sidebar) {
+                    sidebar.classList.add('collapsed');
+                    overlay.style.display = 'none';
+                }
+            });
         }
     }
 };

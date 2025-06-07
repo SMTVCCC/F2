@@ -2,7 +2,7 @@
 class MessageRateLimiter {
     constructor() {
         this.storageKey = 'message_rate_limit';
-        this.maxMessagesPerDay = 30; 
+        this.maxMessagesPerDay = 15; 
         this.userIP = null;
         this.isInitialized = false;
         this.init();
@@ -165,8 +165,33 @@ class MessageRateLimiter {
 
     // 获取重置时间（3分钟后）
     getResetTime() {
+        if (!this.userIP) {
+            const now = new Date();
+            return new Date(now.getTime() + 3 * 60 * 1000);
+        }
+        
+        const data = this.getStoredData();
+        
+        // 如果已经有保存的重置时间，使用它
+        if (data[this.userIP] && data[this.userIP].resetTime) {
+            return new Date(data[this.userIP].resetTime);
+        }
+        
+        // 如果没有保存的重置时间，创建新的并保存
         const now = new Date();
-        const resetTime = new Date(now.getTime() + 3 * 60 * 1000); // 3分钟后
+        const resetTime = new Date(now.getTime() + 3 * 60 * 1000);
+        
+        if (!data[this.userIP]) {
+            data[this.userIP] = {
+                count: 0,
+                lastReset: now.getTime(),
+                firstMessage: now.getTime()
+            };
+        }
+        
+        data[this.userIP].resetTime = resetTime.getTime();
+        this.saveStoredData(data);
+        
         return resetTime;
     }
 
@@ -190,7 +215,7 @@ class MessageRateLimiter {
                     <div class="rate-limit-content">
                         <p>您已达到发送上限（${this.maxMessagesPerDay}条/3分钟）</p>
                         <div class="qr-code-container">
-                            <img src="ds.png" alt="打赏二维码" class="qr-code-image" />
+                            <img src="qian.JPG" alt="打赏二维码" class="qr-code-image" />
                             <p class="qr-code-text">您的支持，是我们继续产出优质内容的最强引擎！❤️</p>
                         </div>
                         <div class="countdown-container">
@@ -199,7 +224,7 @@ class MessageRateLimiter {
                         </div>
                     </div>
                     <div class="rate-limit-footer">
-                        <button class="rate-limit-close" onclick="rateLimiter.closeModal()">我知道了</button>
+                        <button class="rate-limit-close" onclick="rateLimiter.closeModal()">欢迎前往DeepSeek官网继续使用</button>
                     </div>
                 </div>
             </div>
@@ -214,118 +239,243 @@ class MessageRateLimiter {
                 left: 0;
                 width: 100%;
                 height: 100%;
-                background: rgba(0, 0, 0, 0.5);
+                background: linear-gradient(135deg, rgba(255, 105, 180, 0.15), rgba(218, 112, 214, 0.15));
+                backdrop-filter: blur(10px);
                 display: flex;
                 justify-content: center;
                 align-items: center;
                 z-index: 10000;
+                animation: fadeIn 0.3s ease;
+            }
+            
+            @keyframes fadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+            
+            @keyframes slideIn {
+                from { 
+                    opacity: 0;
+                    transform: translateY(-20px) scale(0.95);
+                }
+                to { 
+                    opacity: 1;
+                    transform: translateY(0) scale(1);
+                }
             }
             
             .rate-limit-modal {
-                background: white;
-                border-radius: 12px;
-                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-                max-width: 600px;
-                width: 90%;
-                max-height: 500px;
-                overflow: hidden;
+                 background: linear-gradient(145deg, #ffffff 0%, #fef7f7 100%);
+                 border-radius: 20px;
+                 box-shadow: 0 20px 60px rgba(255, 105, 180, 0.2), 0 8px 32px rgba(0, 0, 0, 0.1);
+                 max-width: 600px;
+                 width: 90%;
+                 min-height: 400px;
+                 overflow: hidden;
+                 border: 1px solid rgba(255, 182, 193, 0.3);
+                 animation: slideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                 position: relative;
+             }
+            
+            .rate-limit-modal::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 4px;
+                background: linear-gradient(90deg, #FF69B4, #DA70D6, #FFB6C1, #9370DB);
+                background-size: 200% 100%;
+                animation: gradientShift 3s ease infinite;
+            }
+            
+            @keyframes gradientShift {
+                0%, 100% { background-position: 0% 50%; }
+                50% { background-position: 100% 50%; }
             }
             
             .rate-limit-header {
-                background: #f8f9fa;
-                padding: 20px;
+                background: transparent;
+                padding: 32px 32px 16px;
                 text-align: center;
-                border-bottom: 1px solid #e9ecef;
+                border-bottom: none;
             }
             
             .rate-limit-header h3 {
-                color: #495057;
+                color: #FF69B4;
                 margin: 0;
-                font-size: 18px;
-                font-weight: 500;
+                font-size: 22px;
+                font-weight: 600;
+                text-shadow: 0 2px 4px rgba(255, 105, 180, 0.1);
             }
             
             .rate-limit-content {
-                padding: 30px;
+                padding: 16px 32px 32px;
                 text-align: center;
             }
             
             .qr-code-container {
-                margin: 20px 0;
-                padding: 20px;
-                background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-                border-radius: 8px;
-                border: 2px dashed #007bff;
+                margin: 24px 0;
+                padding: 24px;
+                background: linear-gradient(135deg, rgba(255, 182, 193, 0.1) 0%, rgba(218, 112, 214, 0.1) 100%);
+                border-radius: 20px;
+                border: 2px dashed rgba(255, 105, 180, 0.3);
+                position: relative;
+                overflow: hidden;
+            }
+            
+            .qr-code-container::before {
+                content: '';
+                position: absolute;
+                top: -2px;
+                left: -2px;
+                right: -2px;
+                bottom: -2px;
+                background: linear-gradient(45deg, #FF69B4, #DA70D6, #FFB6C1, #9370DB);
+                border-radius: 20px;
+                z-index: -1;
+                opacity: 0.1;
             }
             
             .qr-code-image {
-                width: 120px;
-                height: 120px;
-                margin-bottom: 10px;
-                border: 2px solid #007bff;
-                border-radius: 8px;
-                background: white;
-                padding: 5px;
+                 width: 240px;
+                 height: 180px;
+                 margin-bottom: 16px;
+                 border: 3px solid rgba(255, 105, 180, 0.2);
+                 border-radius: 16px;
+                 background: white;
+                 padding: 8px;
+                 box-shadow: 0 8px 24px rgba(255, 105, 180, 0.15);
+                 transition: transform 0.3s ease;
+             }
+            
+            .qr-code-image:hover {
+                transform: scale(1.05);
             }
             
             .qr-code-text {
-                 font-size: 14px;
-                 color: #007bff;
-                 font-weight: 500;
+                 font-size: 15px;
+                 background: linear-gradient(135deg, #FF69B4, #DA70D6);
+                 -webkit-background-clip: text;
+                 -webkit-text-fill-color: transparent;
+                 background-clip: text;
+                 font-weight: 600;
                  margin: 0;
+                 line-height: 1.4;
              }
              
              .rate-limit-content p {
-                 margin: 0 0 20px 0;
-                 color: #6c757d;
-                 font-size: 14px;
+                 margin: 0 0 24px 0;
+                 color: #666;
+                 font-size: 16px;
                  line-height: 1.5;
+                 font-weight: 500;
              }
              
              .countdown-container {
-                 background: #f8f9fa;
-                 border-radius: 4px;
-                 padding: 15px;
-                 border: 1px solid #e9ecef;
+                 background: linear-gradient(135deg, rgba(255, 182, 193, 0.08) 0%, rgba(218, 112, 214, 0.08) 100%);
+                 border-radius: 16px;
+                 padding: 20px;
+                 border: 1px solid rgba(255, 182, 193, 0.2);
+                 backdrop-filter: blur(5px);
              }
              
              .countdown-label {
-                 font-size: 14px;
-                 color: #6c757d;
-                 margin-bottom: 8px;
+                 font-size: 15px;
+                 color: #888;
+                 margin-bottom: 12px;
+                 font-weight: 500;
              }
              
              .countdown-timer {
-                 font-size: 20px;
-                 font-weight: 600;
-                 color: #dc3545;
-                 font-family: monospace;
+                 font-size: 28px;
+                 font-weight: 700;
+                 background: linear-gradient(135deg, #FF69B4, #DA70D6);
+                 -webkit-background-clip: text;
+                 -webkit-text-fill-color: transparent;
+                 background-clip: text;
+                 font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', monospace;
+                 letter-spacing: 2px;
+                 text-shadow: 0 2px 4px rgba(255, 105, 180, 0.1);
              }
             
             .rate-limit-footer {
-                padding: 20px;
+                padding: 24px 32px 32px;
                 text-align: center;
-                border-top: 1px solid #e9ecef;
-                background: #f8f9fa;
+                border-top: none;
+                background: transparent;
             }
             
             .rate-limit-close {
-                background: #007bff;
+                background: linear-gradient(135deg, #FF69B4, #DA70D6);
                 color: white;
                 border: none;
-                padding: 8px 16px;
-                border-radius: 4px;
-                font-size: 14px;
+                padding: 14px 32px;
+                border-radius: 25px;
+                font-size: 15px;
+                font-weight: 600;
                 cursor: pointer;
-                transition: background-color 0.2s;
+                transition: all 0.3s ease;
+                box-shadow: 0 6px 20px rgba(255, 105, 180, 0.3);
+                position: relative;
+                overflow: hidden;
+            }
+            
+            .rate-limit-close::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+                transition: left 0.5s ease;
             }
             
             .rate-limit-close:hover {
-                background: #0056b3;
+                transform: translateY(-2px);
+                box-shadow: 0 8px 25px rgba(255, 105, 180, 0.4);
+            }
+            
+            .rate-limit-close:hover::before {
+                left: 100%;
+            }
+            
+            .rate-limit-close:active {
+                transform: translateY(0);
             }
             
             .remaining-messages {
                 display: none !important;
+            }
+            
+            /* 移动端适配 */
+            @media (max-width: 768px) {
+                .rate-limit-modal {
+                    max-width: 95%;
+                    margin: 20px;
+                }
+                
+                .rate-limit-header {
+                    padding: 24px 20px 12px;
+                }
+                
+                .rate-limit-content {
+                    padding: 12px 20px 24px;
+                }
+                
+                .rate-limit-footer {
+                    padding: 20px 20px 24px;
+                }
+                
+                .qr-code-image {
+                     width: 200px;
+                     height: 150px;
+                 }
+                
+                .countdown-timer {
+                    font-size: 24px;
+                }
             }
         `;
 
@@ -380,6 +530,8 @@ class MessageRateLimiter {
         if (data[this.userIP]) {
             data[this.userIP].count = 0;
             data[this.userIP].lastReset = now;
+            // 清除保存的重置时间，下次达到限制时重新计算
+            delete data[this.userIP].resetTime;
         }
         
         this.saveStoredData(data);
