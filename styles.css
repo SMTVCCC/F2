@@ -570,6 +570,69 @@ body {
     position: relative;
 }
 
+/* 新欢迎语样式 */
+.welcome-message-new {
+    display: none; /* 默认隐藏 */
+    text-align: center;
+    margin-bottom: 25px; /* 略微增加底部边距 */
+    font-size: 32px; /* 进一步增大字号 */
+    color: #FF69B4; /* 粉色 */
+    font-weight: bold; /* 字体加粗 */
+}
+
+.candy-bounce-new {
+    display: inline-block;
+    animation: candyBounceNew 1.2s infinite ease-in-out;
+    margin-left: 8px; /* 与文字的间距 */
+}
+
+@keyframes candyBounceNew {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-10px);
+    }
+    60% {
+        transform: translateY(-5px);
+    }
+}
+
+.main-content.empty-chat .welcome-message-new {
+    display: block; /* 空聊天时显示 */
+}
+
+/* 新对话状态：输入框居中 */
+.main-content.empty-chat {
+    justify-content: center;
+    align-items: center;
+}
+
+.main-content.empty-chat .chat-messages {
+    display: none;
+}
+
+.main-content.empty-chat .input-area {
+    position: static;
+    border: none;
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    padding: 50px; /* 增大内边距 */
+    max-width: 900px; /* 增大最大宽度 */
+    width: 100%;
+}
+
+.main-content.empty-chat .input-container {
+    box-shadow: 0 8px 30px rgba(255, 105, 180, 0.15);
+    border: 2px solid rgba(255, 182, 193, 0.3);
+    transform: scale(1.05);
+}
+
+.main-content.empty-chat .quick-actions-container {
+    margin-top: 30px;
+}
+
 .main-content::before {
     content: '';
     position: absolute;
@@ -655,10 +718,12 @@ body {
 
 .ai-message .message-content {
     background: #ffffff; /* 修改为纯白色 */
+    max-width: 95%;
     border: 1px solid rgba(218, 112, 214, 0.15);
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
     border-top-left-radius: 4px;
     position: relative;
+    max-width: 90%; /* 增加AI消息的最大宽度 */
 }
 
 .ai-message .message-content::before {
@@ -748,49 +813,23 @@ body {
 }
 
 .input-container:focus-within {
-    border-color: transparent;
-    box-shadow: 
-        0 0 0 2px rgba(255, 105, 180, 0.3), 
-        0 8px 25px rgba(255, 105, 180, 0.15),
-        0 0 30px rgba(255, 105, 180, 0.1);
-    animation: inputGlow 2s infinite alternate;
+    border-color: #FF69B4; /* Pink color */
+    box-shadow: 0 0 15px rgba(255, 105, 180, 0.5); /* Softer pink shadow */
+    animation: focusRing 1.5s infinite alternate;
 }
 
-@keyframes inputGlow {
+@keyframes focusRing {
     0% {
-        box-shadow: 
-            0 0 0 2px rgba(255, 105, 180, 0.3), 
-            0 8px 25px rgba(255, 105, 180, 0.15),
-            0 0 20px rgba(255, 105, 180, 0.1);
+        box-shadow: 0 0 8px rgba(255, 105, 180, 0.3), 0 0 0 0 rgba(255, 105, 180, 0.3);
+        border-color: rgba(255, 105, 180, 0.7);
     }
     100% {
-        box-shadow: 
-            0 0 0 3px rgba(255, 105, 180, 0.4), 
-            0 8px 30px rgba(255, 105, 180, 0.3),
-            0 0 40px rgba(255, 105, 180, 0.2);
+        box-shadow: 0 0 15px rgba(255, 105, 180, 0.7), 0 0 0 10px rgba(255, 105, 180, 0);
+        border-color: #FF69B4;
     }
 }
 
-.input-container:focus-within::after {
-    content: '';
-    position: absolute;
-    top: -1px;
-    left: -1px;
-    right: -1px;
-    bottom: -1px;
-    background: linear-gradient(135deg, #FF69B4, #FF1493, #FFB6C1, #FF69B4);
-    background-size: 400% 400%;
-    border-radius: 19px;
-    z-index: -1;
-    opacity: 0.7;
-    animation: borderPulse 3s infinite, borderGradient 15s infinite;
-}
 
-@keyframes borderPulse {
-    0% { opacity: 0.5; }
-    50% { opacity: 0.8; }
-    100% { opacity: 0.5; }
-}
 
 .input-wrapper {
     position: relative;
@@ -1088,6 +1127,48 @@ body {
     50% { transform: translateY(-4px); }
 }
 
+/* 快捷功能区容器样式 */
+.quick-actions-container {
+    position: relative;
+    background: linear-gradient(180deg, 
+        rgba(255, 255, 255, 1) 0%, 
+        rgba(255, 255, 255, 0.95) 100%);
+}
+
+/* 折叠/展开切换按钮 */
+.quick-actions-toggle {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 8px 0;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.quick-actions-toggle:hover {
+    background: rgba(255, 182, 193, 0.1);
+}
+
+.toggle-line {
+    width: 40px;
+    height: 3px;
+    background: linear-gradient(90deg, 
+        rgba(255, 182, 193, 0.3), 
+        rgba(255, 182, 193, 0.8), 
+        rgba(255, 182, 193, 0.3));
+    border-radius: 2px;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.quick-actions-toggle:hover .toggle-line {
+    background: linear-gradient(90deg, 
+        rgba(255, 105, 180, 0.5), 
+        rgba(255, 105, 180, 1), 
+        rgba(255, 105, 180, 0.5));
+    transform: scaleX(1.2);
+}
+
 /* 快捷功能区样式 */
 .quick-actions {
     padding: 18px 25px 22px;
@@ -1096,9 +1177,18 @@ body {
     flex-wrap: wrap;
     justify-content: center;
     position: relative;
-    background: linear-gradient(180deg, 
-        rgba(255, 255, 255, 1) 0%, 
-        rgba(255, 255, 255, 0.95) 100%);
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    max-height: 200px;
+    opacity: 1;
+}
+
+/* 折叠状态 */
+.quick-actions.collapsed {
+    max-height: 0;
+    padding: 0 25px;
+    opacity: 0;
+    transform: translateY(-10px);
 }
 
 .quick-actions::before {
@@ -1819,6 +1909,28 @@ body {
         overflow: hidden;
         display: flex;
         flex-direction: column;
+    }
+    
+    /* 移动端新对话状态样式 */
+    .mobile-device .main-content.empty-chat {
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+    }
+    
+    
+    .mobile-device .main-content.empty-chat .input-area {
+        position: static;
+        border: none;
+        background: transparent;
+        padding: 20px;
+        max-width: 100%;
+        width: 100%;
+    }
+    
+    .mobile-device .main-content.empty-chat .input-container {
+        transform: scale(1.02);
+        box-shadow: 0 6px 25px rgba(255, 105, 180, 0.12);
     }
 
     .mobile-device .chat-messages {
@@ -2901,31 +3013,9 @@ body {
     100% { text-shadow: 0 0 10px rgba(255, 20, 147, 0.5); }
 }
 
-@keyframes borderGradient {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
 
-/* 添加底部光晕效果 */
-.input-container:focus-within::before {
-    content: '';
-    position: absolute;
-    bottom: -15px;
-    left: 10%;
-    right: 10%;
-    height: 15px;
-    background: radial-gradient(ellipse at center, rgba(255, 105, 180, 0.4) 0%, rgba(255, 105, 180, 0) 70%);
-    filter: blur(5px);
-    z-index: -1;
-    animation: bottomGlow 2s infinite alternate;
-    border-radius: 50%;
-}
 
-@keyframes bottomGlow {
-    0% { opacity: 0.5; transform: scaleX(0.9); }
-    100% { opacity: 0.8; transform: scaleX(1.1); }
-}
+
 
 /* 输入框文本光标改为粉色 */
 #messageInput {

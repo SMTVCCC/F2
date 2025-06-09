@@ -452,8 +452,14 @@
                 <div class="mobile-nav-spacer"></div>
             </div>
             
+            
             <div class="chat-messages" id="chatMessages">
                 <!-- 聊天消息将在这里动态添加 -->
+            </div>
+
+            <!-- 欢迎语 -->
+            <div class="welcome-message-new" id="welcomeMessageNew">
+                <p>Hi，我是SMT-AI<span class="candy-bounce-new">🍬</span></p>
             </div>
             
             <!-- 输入区域 -->
@@ -484,23 +490,28 @@
             </div>
 
             <!-- 下方快捷功能区 -->
-            <div class="quick-actions">
-                <button class="action-button" data-prompt=/>
-                    <i class="fas fa-exclamation-circle"></i>
-                    问题反馈
-                </button>
-                <button class="action-button" data-prompt=/>
-                    <i class="fas fa-network-wired"></i>
-                    R1大模型
-                </button>
-                <button class="action-button" data-prompt=/>
-                    <i class="fas fa-surprise"></i>
-                    有彩蛋🍬
-                </button>
-                <button class="action-button" data-prompt=/>
-                    <i class="fas fa-expand"></i>
-                    SMT更多作品
-                </button>
+            <div class="quick-actions-container">
+                <div class="quick-actions-toggle" id="quickActionsToggle">
+                    <div class="toggle-line"></div>
+                </div>
+                <div class="quick-actions collapsed" id="quickActions">
+                    <button class="action-button" data-prompt=/>
+                        <i class="fas fa-exclamation-circle"></i>
+                        问题反馈
+                    </button>
+                    <button class="action-button" data-prompt=/>
+                        <i class="fas fa-network-wired"></i>
+                        R1大模型
+                    </button>
+                    <button class="action-button" data-prompt=/>
+                        <i class="fas fa-surprise"></i>
+                        有彩蛋🍬
+                    </button>
+                    <button class="action-button" data-prompt=/>
+                        <i class="fas fa-expand"></i>
+                        SMT更多作品
+                    </button>
+                </div>
             </div>
         </div>
     </div>

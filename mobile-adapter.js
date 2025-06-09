@@ -273,15 +273,6 @@ const MobileAdapter = {
             // 确保CSS中的样式能正确应用
             welcomeCard.classList.add('mobile-welcome');
             
-            // 如果需要动态修改欢迎卡片的内容，可以在这里进行
-            // 比如可以简化欢迎信息或者修改某些元素
-            
-            // 获取欢迎卡片中的文本内容
-            const welcomeText = welcomeCard.querySelector('.welcome-text');
-            if (welcomeText) {
-                welcomeText.textContent = '我是您的AI助手，可以帮您解答问题、创作内容和编写代码。';
-            }
-            
             // 优化移动端的欢迎卡片交互
             welcomeCard.addEventListener('click', function() {
                 // 点击欢迎卡片后，可以聚焦到输入框

@@ -2,7 +2,7 @@
 class MessageRateLimiter {
     constructor() {
         this.storageKey = 'message_rate_limit';
-        this.maxMessagesPerDay = 15; 
+        this.maxMessagesPerDay = 10; 
         this.userIP = null;
         this.isInitialized = false;
         this.init();

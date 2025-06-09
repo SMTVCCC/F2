@@ -15,6 +15,26 @@ document.addEventListener('DOMContentLoaded', function() {
     const perfectAnswerToggle = document.getElementById('perfectAnswerToggle');
     const logoImage = document.querySelector('.logo'); // 获取logo元素
     const easterEggAudio = document.getElementById('easterEggAudio'); // 获取音频元素
+    const mainContent = document.querySelector('.main-content'); // 获取主内容区域
+
+    // 更新聊天状态函数
+    function updateChatState() {
+        const messages = chatMessages.querySelectorAll('.message');
+        const quickActions = document.getElementById('quickActions');
+        if (messages.length === 0) {
+            // 没有消息时，添加empty-chat类实现居中布局
+            mainContent.classList.add('empty-chat');
+            if (quickActions) {
+                quickActions.classList.remove('collapsed'); // 展开快捷操作栏
+            }
+        } else {
+            // 有消息时，移除empty-chat类回归正常布局
+            mainContent.classList.remove('empty-chat');
+            if (quickActions) {
+                quickActions.classList.add('collapsed'); // 折叠快捷操作栏
+            }
+        }
+    }
 
     // 添加logo点击彩蛋
     let isEasterEggActive = false;
@@ -539,6 +559,7 @@ document.addEventListener('DOMContentLoaded', function() {
         allChats = [];
         chatHistory.innerHTML = '';
         chatMessages.innerHTML = '';
+        updateChatState(); // 更新聊天状态
         createNewChat();
         modalOverlay.classList.remove('show');
         confirmDialog.classList.remove('show');
@@ -728,6 +749,8 @@ document.addEventListener('DOMContentLoaded', function() {
             
             chatMessages.appendChild(messageElement);
         });
+        updateChatState(); // 更新聊天状态以移除 empty-chat 类
+        scrollToBottom(); // 滚动到底部
         
         // 添加高亮样式到当前选中的历史条目
         document.querySelectorAll('.history-item').forEach(item => {
@@ -872,6 +895,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             `;
             alert('聊天内容已剪贴到剪贴板');
+            updateChatState(); // 更新聊天状态
         });
     });
 
@@ -912,6 +936,9 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
         `;
         chatMessages.appendChild(messageDiv);
+        
+        // 更新聊天状态
+        updateChatState();
         
         // 更新消息计数
         const previousMessageCount = lastMessageCount;
@@ -1237,7 +1264,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 为输入框添加回车事件
     if (messageInput) {
-        messageInput.addEventListener('keypress', (event) => {
+        messageInput.addEventListener('keydown', (event) => {
             if (event.key === 'Enter' && !event.shiftKey) {
                 console.log('[调试] 检测到回车键');
                 handleSendMessage(event);
@@ -1266,8 +1293,31 @@ document.addEventListener('DOMContentLoaded', function() {
             .join('\n');
     }
 
+    // 初始化聊天状态
+    updateChatState();
+    
     // 初始化按钮事件
     function setupActionButtons() {
+        // 初始化快捷功能区折叠/展开功能
+        const quickActionsToggle = document.getElementById('quickActionsToggle');
+        const quickActions = document.getElementById('quickActions');
+        
+        if (quickActionsToggle && quickActions) {
+            // 点击切换折叠/展开
+            quickActionsToggle.addEventListener('click', function() {
+                quickActions.classList.toggle('collapsed');
+                
+                // 添加点击动画效果
+                const toggleLine = quickActionsToggle.querySelector('.toggle-line');
+                if (toggleLine) {
+                    toggleLine.style.transform = 'scaleX(0.8)';
+                    setTimeout(() => {
+                        toggleLine.style.transform = '';
+                    }, 150);
+                }
+            });
+        }
+        
         const menuItems = document.querySelectorAll('.menu-item');
         const quickActionButtons = document.querySelectorAll('.quick-actions .action-button');
         
