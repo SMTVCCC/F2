@@ -1974,6 +1974,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         <span class="deep-thinking-candy">🍬</span>
                         <span class="deep-thinking-candy">🍬</span>
                     </span></p>
+                    <div class="thinking-simulation" style="margin-top: 15px; padding: 10px; background: rgba(255, 182, 193, 0.1); border-radius: 8px; font-size: 14px; color: #666; border-left: 3px solid #FFB6C1;">
+                        <div class="simulation-content">正在模拟思考过程...</div>
+                    </div>
                 </div>
             `;
         } else {
@@ -2014,6 +2017,53 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         lastUserMessage = userInput;
         let thinkingStartTime = Date.now();
+
+        // 如果是深度思考模式，启动lite版星火API模拟思考过程
+        let simulationActive = false;
+        if (deepThinkingMode && window.liteSparkAPI) {
+            simulationActive = true;
+            const simulationPrompt = `你是一个专门模拟AI深度思考过程的助手。请模拟一个AI在深度思考时的内心独白，展现思维的层次性和逻辑性。要求：
+
+1. 输出1000-4000字的思考过程！
+2. 不要给出最终答案，只展现思考过程
+3. 使用第一人称视角，如"我需要..."、"让我想想..."、"这里我要考虑..."
+4. 体现多层次思考：初步理解→深入分析→多角度考虑→潜在问题识别→方案评估
+5. 展现思维的跳跃和递进，包含自我质疑和修正
+6. 适当使用思考标记词："嗯..."、"等等"、"不对"、"让我重新思考"、"还有一个问题"
+
+示例格式：
+嗯，用户的问题是关于...让我仔细分析一下。
+
+首先，我需要理解这个问题的核心是什么...
+
+等等，这里还有一个更深层的问题需要考虑...
+
+从另一个角度来看...
+
+不过，我还需要考虑一些潜在的限制和风险...
+
+让我重新整理一下思路...
+
+用户问题：${userInput}`
+            
+            // 设置lite版API的回调
+            window.liteSparkAPI.setResponseCallback((content, role, isComplete) => {
+                if (simulationActive) {
+                    const simulationDiv = tempAiMessage.querySelector('.simulation-content');
+                    if (simulationDiv) {
+                        simulationDiv.innerHTML = content.replace(/\n/g, '<br>');
+                    }
+                    
+                    // 滚动到底部
+                    if (!userScrolled) {
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                    }
+                }
+            });
+            
+            // 发送模拟思考请求
+            window.liteSparkAPI.sendMessage(simulationPrompt);
+        }
 
         try {
             const data = {
@@ -2056,6 +2106,32 @@ document.addEventListener('DOMContentLoaded', function() {
                         if (json.choices && json.choices[0] && json.choices[0].delta) {
                             const newText = json.choices[0].delta.content || "";
                             aiResponseText += newText;
+                            
+                            // 当DeepSeek开始响应时，停止模拟思考并折叠
+                            if (simulationActive && aiResponseText.trim() !== "") {
+                                simulationActive = false;
+                                const thinkingSimulation = tempAiMessage.querySelector('.thinking-simulation');
+                                if (thinkingSimulation) {
+                                    thinkingSimulation.style.cssText += 'max-height: 40px; overflow: hidden; cursor: pointer; transition: max-height 0.3s ease;';
+                                    const simulationContent = thinkingSimulation.querySelector('.simulation-content');
+                                    if (simulationContent) {
+                                        const originalContent = simulationContent.innerHTML;
+                                        simulationContent.innerHTML = '思考过程已折叠，点击展开查看 ▼';
+                                        
+                                        // 添加点击展开/折叠功能
+                                        thinkingSimulation.onclick = function() {
+                                            if (this.style.maxHeight === '40px') {
+                                                this.style.maxHeight = 'none';
+                                                simulationContent.innerHTML = originalContent + '<br><span style="color: #999; font-size: 12px;">点击折叠 ▲</span>';
+                                            } else {
+                                                this.style.maxHeight = '40px';
+                                                simulationContent.innerHTML = '思考过程已折叠，点击展开查看 ▼';
+                                            }
+                                        };
+                                    }
+                                }
+                            }
+                            
                             const modifiedResponse = replaceAIResponse(aiResponseText);
                             if (modifiedResponse.trim() !== "") {
                                 tempAiMessage.innerHTML = `
