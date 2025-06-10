@@ -6,13 +6,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const sendButton = document.getElementById('sendButton');
     const contextToggle = document.getElementById('contextToggle');
     const copyButton = document.getElementById('copyButton');
-    const cutButton = document.getElementById('cutButton');
+    const voiceButton = document.getElementById('voiceButton');
     const clearHistoryButton = document.getElementById('clearHistory');
     const confirmDialog = document.getElementById('confirmDialog');
     const modalOverlay = document.getElementById('modalOverlay');
     const toggleSidebar = document.getElementById('toggleSidebar');
     const sidebar = document.querySelector('.sidebar');
     const perfectAnswerToggle = document.getElementById('perfectAnswerToggle');
+    const deepseekToggle = document.getElementById('deepseekToggle');
     const logoImage = document.querySelector('.logo'); // 获取logo元素
     const easterEggAudio = document.getElementById('easterEggAudio'); // 获取音频元素
     const mainContent = document.querySelector('.main-content'); // 获取主内容区域
@@ -476,31 +477,63 @@ document.addEventListener('DOMContentLoaded', function() {
     let contextMode = false;
     let lastUserMessage = '';
 
-    // 深度思考模式配置
-    let deepThinkingMode = false;
+    // AI模型选择配置
+    let deepThinkingMode = false; // DeepSeek R1 模式
+    let useDeepseekV3Model = false; // DeepSeek V3 模式
+    let useDeepseekModel = false; // 通用DeepSeek模型标识
+    let currentAIModel = 'spark'; // 默认使用星火模型
+    
     if (perfectAnswerToggle) {
-        console.log('[调试] 初始化深度思考按钮');
+        console.log('[调试] 初始化DeepSeek R1按钮');
         perfectAnswerToggle.addEventListener('click', function() {
-            console.log('[调试] 点击深度思考按钮');
-            deepThinkingMode = !deepThinkingMode;
-            console.log('[调试] 深度思考模式:', deepThinkingMode ? '开启' : '关闭');
+            console.log('[调试] 点击DeepSeek R1按钮');
             
-            this.classList.toggle('active');
-            this.title = deepThinkingMode ? '已启用深度思考' : '已关闭深度思考';
+            // 切换R1模式
+            if (!deepThinkingMode) {
+                deepThinkingMode = true;
+                useDeepseekModel = true;
+                currentAIModel = 'deepseek';
+                // 关闭V3模式（如果开启）
+                if (useDeepseekV3Model) {
+                    useDeepseekV3Model = false;
+                    deepseekToggle.classList.remove('active');
+                    deepseekToggle.style.backgroundColor = '';
+                    deepseekToggle.style.color = '';
+                    deepseekToggle.style.borderColor = '';
+                    const deepseekIcon = deepseekToggle.querySelector('i');
+                    if (deepseekIcon) deepseekIcon.style.color = '';
+                }
+            } else {
+                deepThinkingMode = false;
+                useDeepseekModel = useDeepseekV3Model; // 如果V3开启则保持DeepSeek模型
+                currentAIModel = useDeepseekV3Model ? 'deepseek' : 'spark';
+            }
             
-            // 修改视觉反馈样式
+            console.log('[调试] DeepSeek R1模式:', deepThinkingMode ? '开启' : '关闭');
+            
+            this.classList.toggle('active', deepThinkingMode);
+            this.title = deepThinkingMode ? '已启用DeepSeek R1' : '已关闭DeepSeek R1';
+            
+            // 修改视觉反馈样式和占位符
             if (deepThinkingMode) {
-                this.style.backgroundColor = '#FF69B4';  // 热粉色
+                this.style.backgroundColor = '#FF69B4';
                 this.style.color = 'white';
                 this.style.borderColor = '#FF69B4';
                 const icon = this.querySelector('i');
                 if (icon) icon.style.color = 'white';
+                messageInput.placeholder = '正在使用满血版DeepSeek（R1）深度思考模型！';
             } else {
                 this.style.backgroundColor = '';
                 this.style.color = '';
                 this.style.borderColor = '';
                 const icon = this.querySelector('i');
                 if (icon) icon.style.color = '';
+                // 恢复占位符文本
+                if (useDeepseekV3Model) {
+                    messageInput.placeholder = '正在使用满血版DeepSeek（V3）对话模型！';
+                } else {
+                    messageInput.placeholder = '已接入满血版DeepSeek和讯飞星火MAX模型！';
+                }
             }
             
             // 触发一个自定义事件，用于调试
@@ -511,6 +544,64 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     } else {
         console.error('[错误] 未找到深度思考按钮元素');
+    }
+    
+    // DeepSeek V3模型配置
+    if (deepseekToggle) {
+        console.log('[调试] 初始化DeepSeek V3按钮');
+        deepseekToggle.addEventListener('click', function() {
+            console.log('[调试] 点击DeepSeek V3按钮');
+            
+            // 切换V3模式
+            if (!useDeepseekV3Model) {
+                useDeepseekV3Model = true;
+                useDeepseekModel = true;
+                currentAIModel = 'deepseek';
+                // 关闭R1模式（如果开启）
+                if (deepThinkingMode) {
+                    deepThinkingMode = false;
+                    perfectAnswerToggle.classList.remove('active');
+                    perfectAnswerToggle.style.backgroundColor = '';
+                    perfectAnswerToggle.style.color = '';
+                    perfectAnswerToggle.style.borderColor = '';
+                    const perfectIcon = perfectAnswerToggle.querySelector('i');
+                    if (perfectIcon) perfectIcon.style.color = '';
+                }
+            } else {
+                useDeepseekV3Model = false;
+                useDeepseekModel = deepThinkingMode; // 如果R1开启则保持DeepSeek模型
+                currentAIModel = deepThinkingMode ? 'deepseek' : 'spark';
+            }
+            
+            console.log('[调试] DeepSeek V3模式:', useDeepseekV3Model ? '开启' : '关闭');
+            console.log('[调试] 当前AI模型:', currentAIModel);
+            this.classList.toggle('active', useDeepseekV3Model);
+            this.title = useDeepseekV3Model ? '已启用DeepSeek V3' : '已关闭DeepSeek V3';
+            
+            // 修改视觉反馈样式和占位符
+            if (useDeepseekV3Model) {
+                this.style.backgroundColor = '#FF69B4';
+                this.style.color = 'white';
+                this.style.borderColor = '#FF69B4';
+                const icon = this.querySelector('i');
+                if (icon) icon.style.color = 'white';
+                messageInput.placeholder = '正在使用满血版DeepSeek（V3）对话模型！';
+            } else {
+                this.style.backgroundColor = '';
+                this.style.color = '';
+                this.style.borderColor = '';
+                const icon = this.querySelector('i');
+                if (icon) icon.style.color = '';
+                // 恢复占位符文本
+                if (deepThinkingMode) {
+                    messageInput.placeholder = '正在使用满血版DeepSeek（R1）深度思考模型！';
+                } else {
+                    messageInput.placeholder = '已接入满血版DeepSeek和讯飞星火MAX模型！';
+                }
+            }
+        });
+    } else {
+        console.error('[错误] 未找到Deepseek按钮元素');
     }
 
     // 安全地从localStorage获取数据
@@ -883,20 +974,116 @@ document.addEventListener('DOMContentLoaded', function() {
         this.title = contextMode ? '已启用上下文关联' : '已关闭上下文关联';
     });
 
-    // 剪切聊天内容
-    cutButton.addEventListener('click', () => {
-        const chatContent = getChatContent();
-        navigator.clipboard.writeText(chatContent).then(() => {
-            chatMessages.innerHTML = `
-                <div class="message ai-message">
-                    <div class="message-content">
-                        <h2>Hi，我是SMTAI<span class="candy-loading">🍬</span></h2>
-                    </div>
-                </div>
-            `;
-            alert('聊天内容已剪贴到剪贴板');
-            updateChatState(); // 更新聊天状态
-        });
+    // 语音输入功能
+    let recognition = null;
+    let isListening = false;
+
+    // 初始化语音识别
+    function initSpeechRecognition() {
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'zh-CN'; // 设置为中文
+            
+            recognition.onstart = () => {
+                isListening = true;
+                voiceButton.innerHTML = '<i class="fas fa-stop"></i>';
+                voiceButton.title = '停止录音';
+                voiceButton.style.backgroundColor = '#ff4444';
+                
+                // 显示录音提示
+                const recordingTip = document.createElement('div');
+                recordingTip.id = 'recordingTip';
+                recordingTip.innerHTML = '🎤 正在录音，请说话...';
+                recordingTip.style.cssText = `
+                    position: fixed;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    background: rgba(0, 0, 0, 0.8);
+                    color: white;
+                    padding: 20px;
+                    border-radius: 10px;
+                    z-index: 10000;
+                    font-size: 16px;
+                    text-align: center;
+                `;
+                document.body.appendChild(recordingTip);
+            };
+            
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                userInput.value = transcript;
+                userInput.focus();
+            };
+            
+            recognition.onend = () => {
+                isListening = false;
+                voiceButton.innerHTML = '<i class="fas fa-microphone"></i>';
+                voiceButton.title = '语音输入';
+                voiceButton.style.backgroundColor = '';
+                
+                // 移除录音提示
+                const recordingTip = document.getElementById('recordingTip');
+                if (recordingTip) {
+                    recordingTip.remove();
+                }
+            };
+            
+            recognition.onerror = (event) => {
+                console.error('语音识别错误:', event.error);
+                isListening = false;
+                voiceButton.innerHTML = '<i class="fas fa-microphone"></i>';
+                voiceButton.title = '语音输入';
+                voiceButton.style.backgroundColor = '';
+                
+                // 移除录音提示
+                const recordingTip = document.getElementById('recordingTip');
+                if (recordingTip) {
+                    recordingTip.remove();
+                }
+                
+                let errorMessage = '语音识别失败';
+                switch(event.error) {
+                    case 'no-speech':
+                        errorMessage = '未检测到语音，请重试';
+                        break;
+                    case 'audio-capture':
+                        errorMessage = '无法访问麦克风，请检查权限';
+                        break;
+                    case 'not-allowed':
+                        errorMessage = '麦克风权限被拒绝，请在浏览器设置中允许麦克风访问';
+                        break;
+                    case 'network':
+                        errorMessage = '网络错误，请检查网络连接';
+                        break;
+                }
+                alert(errorMessage);
+            };
+        } else {
+            alert('您的浏览器不支持语音识别功能');
+        }
+    }
+
+    voiceButton.addEventListener('click', () => {
+        if (!recognition) {
+            initSpeechRecognition();
+        }
+        
+        if (recognition) {
+            if (isListening) {
+                recognition.stop();
+            } else {
+                try {
+                    recognition.start();
+                } catch (error) {
+                    console.error('启动语音识别失败:', error);
+                    alert('启动语音识别失败，请重试');
+                }
+            }
+        }
     });
 
     // 添加消息到聊天界面
@@ -1111,6 +1298,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 button.classList.remove('active');
                 if (button === contextToggle) contextMode = false;
                 if (button === perfectAnswerToggle) deepThinkingMode = false;
+            if (button === deepseekToggle) {
+                useDeepseekModel = false;
+                currentAIModel = 'spark';
+                messageInput.placeholder = '已接入满血版DeepSeek和讯飞星火MAX模型！';
+            }
             }
         }
     }
@@ -1168,9 +1360,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 // 如果有快速回复，直接显示，并跳过AI响应
                 addMessage(message, true, true); // 添加用户消息，跳过AI响应
                 messageInput.value = '';
-                messageInput.style.borderColor = '#ccc';
-                messageInput.style.borderWidth = '1px';
-                messageInput.focus();
+        messageInput.style.borderColor = '#ccc';
+        messageInput.style.borderWidth = '1px';
+        messageInput.style.height = 'auto'; // 重置高度
+        messageInput.focus();
                 
                 // 添加AI的快速回复
                 const aiMessage = document.createElement('div');
@@ -1195,9 +1388,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 // 如果没有快速回复，走正常的AI响应流程
                 addMessage(message, true);
                 messageInput.value = '';
-                messageInput.style.borderColor = '#ccc';
-                messageInput.style.borderWidth = '1px';
-                messageInput.focus();
+        messageInput.style.borderColor = '#ccc';
+        messageInput.style.borderWidth = '1px';
+        messageInput.style.height = 'auto'; // 重置高度
+        messageInput.focus();
                 
                 // 禁用发送按钮并显示加载状态
                 setSendButtonLoading(true);
@@ -1275,12 +1469,45 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('[调试] 输入框内容变化:', messageInput.value);
             messageInput.style.borderColor = '#FF69B4';
             messageInput.style.borderWidth = '2px';
+            
+            // 自动调整高度，最多3行
+            messageInput.style.height = 'auto';
+            const lineHeight = parseInt(window.getComputedStyle(messageInput).lineHeight);
+            const maxHeight = lineHeight * 3; // 最多3行
+            const scrollHeight = messageInput.scrollHeight;
+            
+            if (scrollHeight <= maxHeight) {
+                messageInput.style.height = scrollHeight + 'px';
+                messageInput.style.overflowY = 'hidden';
+            } else {
+                messageInput.style.height = maxHeight + 'px';
+                messageInput.style.overflowY = 'auto';
+            }
         });
 
         messageInput.addEventListener('blur', () => {
             messageInput.style.borderColor = '#ccc';
             messageInput.style.borderWidth = '1px';
         });
+        
+        // 初始化时设置正确的高度
+        function adjustTextareaHeight() {
+            messageInput.style.height = 'auto';
+            const lineHeight = parseInt(window.getComputedStyle(messageInput).lineHeight);
+            const maxHeight = lineHeight * 3; // 最多3行
+            const scrollHeight = messageInput.scrollHeight;
+            
+            if (scrollHeight <= maxHeight) {
+                messageInput.style.height = scrollHeight + 'px';
+                messageInput.style.overflowY = 'hidden';
+            } else {
+                messageInput.style.height = maxHeight + 'px';
+                messageInput.style.overflowY = 'auto';
+            }
+        }
+        
+        // 页面加载时调整一次高度
+        adjustTextareaHeight();
     }
 
     // 复制聊天内容
@@ -1370,7 +1597,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                     很抱歉给您带来不便，如有问题或建议请反馈！
                                 </div>
                                 <p style="font-size: 12px; color: #999;margin-top:8px">
-                                    请联系：qqnlrwzcb@163.com
+                                    请联系：smtoffice@yeah.net
                                 </p>
                             </div>
                         `;
@@ -1383,8 +1610,8 @@ document.addEventListener('DOMContentLoaded', function() {
                             content: feedbackMessage.innerHTML
                         });
                         break;
-                    case 1: // V3大模型
-                        addMessage('你好我是SMT-AI，满血版Deepseek（R1）大模型开发的AI对话智能体！', false, true);
+                    case 1: // DEEPSEEK
+                        addMessage('你好我是SMT-AI，基于DeepSeek深度思考大模型开发的AI对话智能体！', false, true);
                         break;
                     case 2: // 有彩蛋
                         createCandyHeart();
@@ -1614,6 +1841,127 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 使用 fetch API 流式获取 AI 回复
     async function getAIResponse(userInput) {
+        // 根据当前选择的AI模型调用不同的API
+        if (currentAIModel === 'spark') {
+            return getSparkAIResponse(userInput);
+        } else {
+            return getDeepseekAIResponse(userInput);
+        }
+    }
+    
+    // 星火AI响应函数
+    async function getSparkAIResponse(userInput) {
+        const tempAiMessage = document.createElement('div');
+        tempAiMessage.className = 'message ai-message';
+        
+        tempAiMessage.innerHTML = `
+            <div class="message-content">
+                <p>思考中 <span class="candy-loading">🍬</span></p>
+            </div>
+        `;
+        
+        chatMessages.appendChild(tempAiMessage);
+        
+        // 强制滚动到底部
+        const wasUserScrolled = userScrolled;
+        userScrolled = false;
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        
+        // 更新消息计数
+        lastMessageCount = chatMessages.querySelectorAll('.message').length;
+        lastReadMessageCount = lastMessageCount;
+        
+        setTimeout(() => {
+            userScrolled = wasUserScrolled;
+        }, 500);
+        
+        let finalUserInput = userInput;
+        if (contextMode) {
+            const recentMessages = currentChat.messages.slice(-20);
+            if (recentMessages.length > 0) {
+                const historyText = recentMessages
+                    .map(msg => (msg.type === 'user' ? '用户' : 'AI') + '：' + msg.content)
+                    .join('。');
+                finalUserInput = `上文：${historyText}。本次：${userInput}`;
+            }
+        }
+        lastUserMessage = userInput;
+        let thinkingStartTime = Date.now();
+        
+        try {
+            // 设置星火API的响应回调
+            if (window.sparkAPI) {
+                window.sparkAPI.setResponseCallback((content, role, isComplete) => {
+                    if (role === 'error') {
+                        tempAiMessage.innerHTML = `
+                            <div class="message-content">
+                                <p>${content}</p>
+                                <div style="font-size:12px;color:#999;margin-top:8px">
+                                    如有问题请联系：qqnlrwzcb@163.com
+                                </div>
+                            </div>
+                        `;
+                        setSendButtonLoading(false);
+                        return;
+                    }
+                    
+                    if (content && content.trim() !== '') {
+                        const modifiedResponse = replaceAIResponse(content);
+                        tempAiMessage.innerHTML = `
+                            <div class="message-content">
+                                <p>${modifiedResponse}</p>
+                            </div>
+                        `;
+                        
+                        // 自动滚动逻辑
+                        if (!userScrolled) {
+                            chatMessages.scrollTop = chatMessages.scrollHeight;
+                        }
+                        
+                        // 触发MathJax重新渲染
+                        if (typeof MathJax !== 'undefined' && MathJax.typesetPromise) {
+                            MathJax.typesetPromise([tempAiMessage]).catch((err) => {
+                                console.error('MathJax渲染错误:', err);
+                            });
+                        }
+                        
+                        // 如果消息完成，保存到聊天记录
+                        if (isComplete) {
+                            currentChat.messages.push({
+                                type: 'ai',
+                                content: modifiedResponse
+                            });
+                            saveChatsToStorage();
+                            showThinkingTime(Date.now() - thinkingStartTime);
+                            setSendButtonLoading(false);
+                        }
+                    }
+                });
+                
+                // 发送消息到API
+                await window.sparkAPI.sendMessage(finalUserInput);
+            } else {
+                throw new Error('未初始化');
+            }
+        } catch (error) {
+            console.error('[错误] 响应失败:', error);
+            tempAiMessage.innerHTML = `
+                <div class="message-content">
+                    <p>服务暂时不可用，请稍后再试</p>
+                    <div style="font-size:12px;color:#999;margin-top:8px">
+                        原始错误：${error.message || '未知错误'}
+                    </div>
+                    <p style="font-size: 12px; color: #999;margin-top:8px">
+                        如有问题请联系：qqnlrwzcb@163.com
+                    </p>
+                </div>
+            `;
+            setSendButtonLoading(false);
+        }
+    }
+    
+    // Deepseek AI响应函数（原有的实现）
+    async function getDeepseekAIResponse(userInput) {
         const tempAiMessage = document.createElement('div');
         tempAiMessage.className = 'message ai-message';
         
@@ -1742,7 +2090,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // 如果开启了深度思考模式，添加标签
             if (deepThinkingMode) {
-                tempAiMessage.querySelector('.message-content p').innerHTML += `<small class="model-tag deep-thinking">深度思考模式</small>`;
+                const messageContent = tempAiMessage.querySelector('.message-content p');
+                if (messageContent) {
+                    messageContent.innerHTML += `<small class="model-tag deep-thinking">深度思考模式</small>`;
+                }
             }
 
             currentChat.messages.push({
