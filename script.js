@@ -1015,8 +1015,8 @@ document.addEventListener('DOMContentLoaded', function() {
             
             recognition.onresult = (event) => {
                 const transcript = event.results[0][0].transcript;
-                userInput.value = transcript;
-                userInput.focus();
+                messageInput.value = transcript;
+                messageInput.focus();
             };
             
             recognition.onend = () => {
@@ -1927,6 +1927,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         
                         // 如果消息完成，保存到聊天记录
                         if (isComplete) {
+                            // 添加XF-MAX模式标签
+                            const messageContent = tempAiMessage.querySelector('.message-content p');
+                            if (messageContent) {
+                                messageContent.innerHTML += `<small class="model-tag spark-mode">XF-MAX模式</small>`;
+                            }
+                            
                             currentChat.messages.push({
                                 type: 'ai',
                                 content: modifiedResponse
@@ -2036,13 +2042,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
 首先，我需要理解这个问题的核心是什么...
 
+然后，我需要深入分析这个问题...
+
 等等，这里还有一个更深层的问题需要考虑...
 
 从另一个角度来看...
 
 不过，我还需要考虑一些潜在的限制和风险...
 
+需要注意的是...
+
 让我重新整理一下思路...
+
 
 用户问题：${userInput}`
             
@@ -2168,7 +2179,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (deepThinkingMode) {
                 const messageContent = tempAiMessage.querySelector('.message-content p');
                 if (messageContent) {
-                    messageContent.innerHTML += `<small class="model-tag deep-thinking">深度思考模式</small>`;
+                    messageContent.innerHTML += `<small class="model-tag deep-thinking">DS深度思考R1</small>`;
                 }
             }
 

@@ -203,27 +203,27 @@ if (!window.liteSparkAPI) {
         
         // 根据字符类型返回不同的延迟时间
         getTypingDelay(char) {
-            if (!char) return 30;
+            if (!char) return 18;
             
             // 中文字符稍慢一些
             if (/[\u4e00-\u9fa5]/.test(char)) {
-                return 50 + Math.random() * 25; // 50-75ms
+                return 32 + Math.random() * 18; // 32-50ms
             }
             // 标点符号停顿稍长
             else if (/[。！？；，、：]/.test(char)) {
-                return 120 + Math.random() * 60; // 120-180ms
+                return 72 + Math.random() * 36; // 72-108ms
             }
             // 英文字符和数字
             else if (/[a-zA-Z0-9]/.test(char)) {
-                return 20 + Math.random() * 15; // 20-35ms
+                return 14 + Math.random() * 9; // 14-23ms
             }
             // 空格和换行
             else if (/\s/.test(char)) {
-                return 30 + Math.random() * 20; // 30-50ms
+                return 18 + Math.random() * 14; // 18-32ms
             }
             // 其他字符
             else {
-                return 40 + Math.random() * 25; // 40-65ms
+                return 23 + Math.random() * 18; // 23-41ms
             }
         },
         

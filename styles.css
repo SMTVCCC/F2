@@ -723,7 +723,7 @@ body {
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
     border-top-left-radius: 4px;
     position: relative;
-    max-width: 90%; /* 增加AI消息的最大宽度 */
+    max-width: 80%; /* 修改AI消息的最大宽度为85% */
 }
 
 .ai-message .message-content::before {
@@ -1351,6 +1351,12 @@ body {
     box-shadow: 0 2px 5px rgba(255, 105, 180, 0.3);
     font-weight: 500;
     letter-spacing: 0.5px;
+}
+
+/* 星火模式标签样式 */
+.model-tag.spark-mode {
+    background: linear-gradient(135deg, #ff6b35, #f7931e);
+    box-shadow: 0 2px 5px rgba(255, 107, 53, 0.3);
 }
 
 /* 思考时间显示样式 */
