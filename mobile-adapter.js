@@ -70,43 +70,6 @@ const MobileAdapter = {
             }
         });
 
-        // 设置遮罩层样式 (可以考虑也移到CSS)
-        const overlayStyles = `
-            .mobile-overlay {
-                display: none;
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background: rgba(0,0,0,0.5);
-                z-index: 999;
-            }
-            .mobile-overlay.show {
-                display: block;
-            }
-            .mobile-menu-button {
-                position: fixed;
-                top: 15px;
-                left: 15px;
-                width: 40px;
-                height: 40px;
-                border-radius: 50%;
-                background: white;
-                border: none;
-                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                z-index: 100;
-                cursor: pointer;
-                color: #FF69B4;
-                font-size: 18px;
-            }
-        `;
-        const styleSheet = document.createElement('style');
-        styleSheet.textContent = overlayStyles;
-        document.head.appendChild(styleSheet);
 
         // 点击遮罩层关闭菜单
         overlay.addEventListener('click', () => {
