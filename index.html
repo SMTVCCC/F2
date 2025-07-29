@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0">
-    <meta name="apple-mobile-web-app-capable" content="yes">
+    
     <title>SMT-AI智能体</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="code-styles.css">
@@ -444,13 +444,7 @@
         <!-- 主聊天区域 -->
         <div class="main-content">
             <!-- 移动端顶部导航栏 -->
-            <div class="mobile-top-nav">
-                <button class="mobile-menu-toggle" id="mobileMenuToggle">
-                    <i class="fas fa-bars"></i>
-                </button>
-                <div class="mobile-nav-title">Smitty AI</div>
-                <div class="mobile-nav-spacer"></div>
-            </div>
+            
             
             
             <div class="chat-messages" id="chatMessages">
@@ -484,6 +478,9 @@
                         <div class="right-buttons">
                             <button class="tool-button" id="voiceButton" title="语音输入">
                                 <i class="fas fa-microphone"></i>
+                            </button>
+                            <button class="tool-button" id="copyButton" title="复制对话">
+                                <i class="fas fa-copy"></i>
                             </button>
                             <button class="send-button" id="sendButton">
                                 <i class="fas fa-arrow-up"></i>
@@ -519,7 +516,7 @@
             </div>
         </div>
     </div>
-    <div class="mobile-overlay"></div>
+    
     <!-- 消息限制器脚本 - 必须在其他脚本之前加载 -->
     <script src="rate-limiter.js"></script>
     <!-- 加载CryptoJS库用于星火API认证 -->
@@ -532,7 +529,7 @@
     <script src="lite-init-spark.js"></script>
     <script src="script.js"></script>
     <script src="copy-code.js"></script>
-    <script src="mobile-adapter.js"></script>
+    
     <script src="auto-refresh.js"></script>
     <!-- 添加新对话按钮修复脚本 -->
     <script src="fix-newchat.js"></script>

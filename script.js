@@ -5,7 +5,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const newChatButton = document.getElementById('newChat');
     const sendButton = document.getElementById('sendButton');
     const contextToggle = document.getElementById('contextToggle');
-    const copyButton = document.getElementById('copyButton');
     const voiceButton = document.getElementById('voiceButton');
     const clearHistoryButton = document.getElementById('clearHistory');
     const confirmDialog = document.getElementById('confirmDialog');
@@ -631,18 +630,84 @@ document.addEventListener('DOMContentLoaded', function() {
         }]
     };
 
+    // 响应式设计相关变量
+    let isResponsiveMode = false;
+    let userManuallyCollapsed = false;
+    
+    // 检查是否处于响应式模式
+    function checkResponsiveMode() {
+        const windowWidth = window.innerWidth;
+        const wasResponsiveMode = isResponsiveMode;
+        
+        if (windowWidth <= 1200) {
+            isResponsiveMode = true;
+            // 在响应式模式下，自动收缩侧边栏
+            if (!sidebar.classList.contains('collapsed')) {
+                sidebar.classList.add('collapsed');
+            }
+            // 隐藏切换按钮，因为在响应式模式下侧边栏应该保持收缩状态
+            toggleSidebar.style.display = 'none';
+        } else {
+            isResponsiveMode = false;
+            // 退出响应式模式时，显示切换按钮
+            toggleSidebar.style.display = 'flex';
+            
+            // 如果之前不是响应式模式，恢复用户的手动设置
+            if (wasResponsiveMode) {
+                const userPreference = localStorage.getItem('sidebarCollapsed') === 'true';
+                if (userPreference) {
+                    sidebar.classList.add('collapsed');
+                } else {
+                    sidebar.classList.remove('collapsed');
+                }
+            }
+        }
+    }
+    
     // 初始化侧边栏状态
     const isSidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
-    if (isSidebarCollapsed) {
+    userManuallyCollapsed = isSidebarCollapsed;
+    
+    // 初始检查响应式模式
+    checkResponsiveMode();
+    
+    // 如果不在响应式模式下，应用用户的偏好设置
+    if (!isResponsiveMode && isSidebarCollapsed) {
         sidebar.classList.add('collapsed');
     }
 
     // 处理侧边栏折叠/展开
     toggleSidebar.addEventListener('click', () => {
         console.log('Toggle sidebar clicked');
-        sidebar.classList.toggle('collapsed');
-        localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+        // 只有在非响应式模式下才允许手动切换
+        if (!isResponsiveMode) {
+            sidebar.classList.toggle('collapsed');
+            userManuallyCollapsed = sidebar.classList.contains('collapsed');
+            localStorage.setItem('sidebarCollapsed', userManuallyCollapsed);
+        }
     });
+    
+    // 监听窗口大小变化
+    window.addEventListener('resize', () => {
+        checkResponsiveMode();
+    });
+    
+    // 防抖函数，避免频繁触发resize事件
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+    
+    // 使用防抖的resize监听器
+    const debouncedCheckResponsive = debounce(checkResponsiveMode, 150);
+    window.addEventListener('resize', debouncedCheckResponsive);
 
     // 清空聊天记录并更新界面
     function clearChatHistory() {
@@ -1981,7 +2046,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <span class="deep-thinking-candy">🍬</span>
                     </span></p>
                     <div class="thinking-simulation" style="margin-top: 15px; padding: 10px; background: rgba(255, 182, 193, 0.1); border-radius: 8px; font-size: 14px; color: #666; border-left: 3px solid #FFB6C1;">
-                        <div class="simulation-content">正在模拟思考过程...</div>
+                        <div class="simulation-content">正在进行深度思考...</div>
                     </div>
                 </div>
             `;
@@ -2030,7 +2095,7 @@ document.addEventListener('DOMContentLoaded', function() {
             simulationActive = true;
             const simulationPrompt = `你是一个专门模拟AI深度思考过程的助手。请模拟一个AI在深度思考时的内心独白，展现思维的层次性和逻辑性。要求：
 
-1. 输出至少1000-4000字的思考过程！
+1. 输出至少1000-4000字的思考过程！请灵活调整字数输出！
 2. 不要给出最终答案，只展现思考过程
 3. 使用第一人称视角，如"我需要..."、"让我想想..."、"这里我要考虑..."
 4. 体现多层次思考：初步理解→深入分析→多角度考虑→潜在问题识别→方案评估
@@ -2050,7 +2115,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
 不过，我还需要考虑一些潜在的限制和风险...
 
+不对，我没有考虑到...
+
 需要注意的是...
+
+嗯，这下应该对了...
 
 让我重新整理一下思路...
 
@@ -2249,12 +2318,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // 复制聊天内容
-    copyButton.addEventListener('click', () => {
-        const chatContent = getChatContent();
-        navigator.clipboard.writeText(chatContent).then(() => {
-            alert('聊天内容已复制到剪贴板');
+    const copyButton = document.getElementById('copyButton');
+    if (copyButton) {
+        copyButton.addEventListener('click', () => {
+            const chatContent = getChatContent();
+            navigator.clipboard.writeText(chatContent).then(() => {
+                alert('聊天内容已复制到剪贴板');
+            });
         });
-    });
+    }
 
     // 添加全局事件委托，确保即使动态添加的元素也能响应点击
     document.addEventListener('click', function(event) {
