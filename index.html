@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0">
     
     <title>SMT-AI智能体</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="code-styles.css">
+    <link rel="stylesheet" href="styles.css?v=5">
+    <link rel="stylesheet" href="code-styles.css?v=4">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="apple-touch-icon" href="IOS.png"/>
     <!-- 添加MathJax库支持，用于渲染数学公式 -->
@@ -134,7 +134,12 @@
         .input-container {
             border: 1px solid #e0e0e0;
             border-radius: 12px;
-            padding: 12px;
+            padding: 25px 20px;
+        }
+        /* 首页状态下的胶囊形状 */
+        .main-content.empty-chat .input-container {
+            border-radius: 30px;
+            padding: 25px 30px;
         }
         .input-wrapper {
             position: relative;
@@ -162,9 +167,9 @@
             align-items: center;
             gap: 5px;
             padding: 6px 12px;
-            border: 1px solid #e0e0e0;
-            border-radius: 6px;
-            background: #f5f5f5;
+            border: 1px solid rgba(255, 182, 193, 0.2);
+            border-radius: 16px;
+            background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
             color: #666;
             cursor: pointer;
             font-size: 14px;
@@ -173,6 +178,7 @@
             min-width: 80px;
             justify-content: center;
             margin-right: 8px;
+            box-shadow: 0 4px 15px rgba(255, 105, 180, 0.08), 0 1px 5px rgba(0, 0, 0, 0.03);
         }
         .model-button:last-of-type {
             margin-right: auto;
@@ -199,19 +205,21 @@
             transition: color 0.3s;
         }
         .send-button {
-            background-color: #FFB6C1;  /* 浅粉色 */
+            background: linear-gradient(135deg, #FF69B4 0%, #DA70D6 50%, #FFB6C1 100%);
             border: none;
-            border-radius: 50%;
+            border-radius: 16px;
             width: 40px;
             height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 6px 20px rgba(255, 105, 180, 0.25), 0 2px 8px rgba(0, 0, 0, 0.08);
         }
         .send-button:hover {
-            background-color: #FF69B4;  /* 热粉色 */
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(255, 105, 180, 0.35), 0 3px 12px rgba(0, 0, 0, 0.12);
         }
         .send-button i {
             color: white;
@@ -378,7 +386,7 @@
     </div>
     <div class="chat-container">
         <!-- 左侧菜单 -->
-        <div class="sidebar">
+        <div class="sidebar collapsed">
             <button class="toggle-sidebar" id="toggleSidebar">
                 <i class="fas fa-chevron-left"></i>
             </button>
@@ -476,11 +484,11 @@
                             DeepSeek（V3）
                         </button>
                         <div class="right-buttons">
-                            <button class="tool-button" id="voiceButton" title="语音输入">
-                                <i class="fas fa-microphone"></i>
-                            </button>
-                            <button class="tool-button" id="copyButton" title="复制对话">
+                            <button class="tool-button" id="copyButton" title="复制聊天内容">
                                 <i class="fas fa-copy"></i>
+                            </button>
+                            <button class="tool-button" id="voiceButton" title="语音输入" style="display: none;">
+                                <i class="fas fa-microphone"></i>
                             </button>
                             <button class="send-button" id="sendButton">
                                 <i class="fas fa-arrow-up"></i>

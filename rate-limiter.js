@@ -67,65 +67,11 @@ class MessageRateLimiter {
 
     // 检查速率限制
     checkRateLimit() {
-        if (!this.isInitialized) {
-            return true; // 如果还未初始化，允许发送
-        }
-        
-        const data = this.getStoredData();
-        const now = Date.now();
-        const currentMaxMessages = this.getCurrentMaxMessages();
-        
-        if (!data[this.userIP]) {
-            data[this.userIP] = {
-                count: 0,
-                lastReset: now,
-                firstMessage: now
-            };
-        }
-        
-        // 不自动重置，只有达到限制后通过倒计时手动重置
-        
-        // 检查是否超过限制
-        if (data[this.userIP].count >= currentMaxMessages) {
-            // 显示限制弹窗
-            this.showRateLimitModal();
-            return false;
-        }
-        
         return true;
     }
 
     // 记录新消息
     recordMessage() {
-        if (!this.isInitialized) {
-            return true;
-        }
-        
-        const now = Date.now();
-        const data = this.getStoredData();
-        const currentMaxMessages = this.getCurrentMaxMessages();
-        
-        if (!data[this.userIP]) {
-            data[this.userIP] = {
-                count: 0,
-                lastReset: now,
-                firstMessage: now
-            };
-        }
-        
-        // 不自动重置，只有达到限制后通过倒计时手动重置
-        
-        // 检查是否超过限制
-        if (data[this.userIP].count >= currentMaxMessages) {
-            return false;
-        }
-        
-        data[this.userIP].count++;
-        data[this.userIP].lastMessage = now;
-        
-        this.saveStoredData(data);
-        this.updateRemainingCount();
-        
         return true;
     }
 
@@ -457,33 +403,7 @@ class MessageRateLimiter {
                 display: none !important;
             }
             
-            /* 移动端适配 */
-            @media (max-width: 480px) {
-                .rate-limit-modal {
-                    margin: 20px;
-                }
-                
-                .rate-limit-header {
-                    padding: 24px 20px 12px;
-                }
-                
-                .rate-limit-content {
-                    padding: 12px 20px 24px;
-                }
-                
-                .rate-limit-footer {
-                    padding: 20px 20px 24px;
-                }
-                
-                .qr-code-image {
-                      width: 150px;
-                      height: 150px;
-                  }
-                
-                .countdown-timer {
-                    font-size: 24px;
-                }
-            }
+
         `;
 
         document.head.appendChild(style);

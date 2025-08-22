@@ -176,7 +176,7 @@ if (!window.sparkAPI) {
                 },
                 parameter: {
                     chat: {
-                        max_tokens: 4039,
+                        max_tokens: 2000,
                         domain: this.domain,
                         top_k: 3,
                         temperature: 0.5

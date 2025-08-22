@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const newChatButton = document.getElementById('newChat');
     const sendButton = document.getElementById('sendButton');
     const contextToggle = document.getElementById('contextToggle');
+    const copyButton = document.getElementById('copyButton');
     const voiceButton = document.getElementById('voiceButton');
     const clearHistoryButton = document.getElementById('clearHistory');
     const confirmDialog = document.getElementById('confirmDialog');
@@ -1579,10 +1580,38 @@ document.addEventListener('DOMContentLoaded', function() {
     function getChatContent() {
         return Array.from(chatMessages.children)
             .map(msg => {
-                const content = msg.querySelector('p')?.textContent || msg.querySelector('h2')?.textContent || '';
+                const contentEl = msg.querySelector('.message-content');
+                if (!contentEl) return '';
+                
+                // 创建一个临时元素来处理内容
+                const tempDiv = contentEl.cloneNode(true);
+                
+                // 处理代码块，将其转换为纯文本格式
+                const codeBlocks = tempDiv.querySelectorAll('.code-block');
+                codeBlocks.forEach(codeBlock => {
+                    const codeElement = codeBlock.querySelector('code');
+                    const language = codeBlock.querySelector('.code-language')?.textContent || '';
+                    if (codeElement) {
+                        const codeText = codeElement.textContent;
+                        // 用markdown格式替换代码块
+                        const markdownCode = `\n\`\`\`${language.toLowerCase()}\n${codeText}\n\`\`\`\n`;
+                        codeBlock.outerHTML = markdownCode;
+                    }
+                });
+                
+                // 处理图片
+                const images = tempDiv.querySelectorAll('img');
+                images.forEach(img => {
+                    const alt = img.alt || '图片';
+                    const src = img.src;
+                    img.outerHTML = `[${alt}](${src})`;
+                });
+                
+                // 获取处理后的文本内容
+                const content = tempDiv.innerText || tempDiv.textContent || '';
                 return msg.classList.contains('user-message') ? `用户: ${content}` : `AI: ${content}`;
             })
-            .join('\n');
+            .join('\n\n');
     }
 
     // 初始化聊天状态
@@ -2096,7 +2125,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const simulationPrompt = `你是一个专门模拟AI深度思考过程的助手。请模拟一个AI在深度思考时的内心独白，展现思维的层次性和逻辑性。要求：
 
 1. 输出至少1000-4000字的思考过程！请灵活调整字数输出！
-2. 不要给出最终答案，只展现思考过程
+2. 只展现思考过程！
 3. 使用第一人称视角，如"我需要..."、"让我想想..."、"这里我要考虑..."
 4. 体现多层次思考：初步理解→深入分析→多角度考虑→潜在问题识别→方案评估
 5. 展现思维的跳跃和递进，包含自我质疑和修正
@@ -2113,9 +2142,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 从另一个角度来看...
 
-不过，我还需要考虑一些潜在的限制和风险...
-
-不对，我没有考虑到...
+不过，我还需要考虑一些其他因素...
 
 需要注意的是...
 
@@ -2318,15 +2345,39 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // 复制聊天内容
-    const copyButton = document.getElementById('copyButton');
-    if (copyButton) {
-        copyButton.addEventListener('click', () => {
-            const chatContent = getChatContent();
-            navigator.clipboard.writeText(chatContent).then(() => {
+    copyButton.addEventListener('click', () => {
+        const chatContent = getChatContent();
+        
+        if (!chatContent.trim()) {
+            alert('暂无聊天内容可复制');
+            return;
+        }
+        
+        // 使用现代的Clipboard API
+        navigator.clipboard.writeText(chatContent)
+            .then(() => {
                 alert('聊天内容已复制到剪贴板');
+            })
+            .catch(err => {
+                console.error('复制聊天内容出错:', err);
+                
+                // 如果Clipboard API失败，尝试使用传统方法
+                try {
+                    const textArea = document.createElement('textarea');
+                    textArea.value = chatContent;
+                    textArea.style.position = 'fixed';
+                    textArea.style.opacity = '0';
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    alert('聊天内容已复制到剪贴板');
+                } catch (fallbackErr) {
+                    console.error('备用复制方法也失败:', fallbackErr);
+                    alert('复制失败，请手动选择并复制内容');
+                }
             });
-        });
-    }
+    });
 
     // 添加全局事件委托，确保即使动态添加的元素也能响应点击
     document.addEventListener('click', function(event) {

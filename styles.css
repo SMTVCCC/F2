@@ -944,15 +944,13 @@ body {
 }
 
 .ai-message .message-content {
-    background: linear-gradient(135deg, #f9f9f9 0%, #ffffff 100%);
+    background: #ffffff; /* 修改为纯白色 */
     max-width: 95%;
-    border: 1px solid rgba(218, 112, 214, 0.1);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(218, 112, 214, 0.15);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
     border-top-left-radius: 4px;
     position: relative;
-    max-width: 80%;
-    color: #444;
-    line-height: 1.7;
+    max-width: 80%; /* 修改AI消息的最大宽度为85% */
 }
 
 .ai-message .message-content::before {
@@ -969,28 +967,16 @@ body {
     border-radius: 20px 20px 0 0;
 }
 
-/* 优化AI消息中的标题样式 */
-.ai-message .message-content h1,
-.ai-message .message-content h2,
-.ai-message .message-content h3 {
-    font-weight: 700;
-    color: #333;
-    margin-top: 20px;
-    margin-bottom: 10px;
-    padding-bottom: 5px;
-    border-bottom: 2px solid rgba(255, 105, 180, 0.2);
-}
-
-.ai-message .message-content h1 {
-    font-size: 24px;
-}
-
-.ai-message .message-content h2 {
-    font-size: 20px;
-}
-
-.ai-message .message-content h3 {
-    font-size: 18px;
+.message-content h2 {
+    font-size: 26px;
+    font-weight: 600;
+    background: var(--candy-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    display: inline-block;
+    margin-bottom: 5px;
+    position: relative;
 }
 
 .message-content h2::after {
@@ -1004,68 +990,9 @@ body {
     opacity: 0.5;
 }
 
-/* 优化AI消息中的代码块样式 */
-.ai-message .message-content pre {
-    background-color: #2d2d2d;
-    color: #f8f8f2;
-    padding: 20px;
-    border-radius: 12px;
-    margin: 20px 0;
-    overflow-x: auto;
-    font-family: 'Fira Code', 'Courier New', monospace;
-    font-size: 14px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    position: relative;
-}
-
-.ai-message .message-content pre::before {
-    content: 'CODE';
-    position: absolute;
-    top: -10px;
-    left: 15px;
-    background: #ff69b4;
-    color: white;
-    padding: 2px 8px;
-    border-radius: 6px;
-    font-size: 10px;
-    font-weight: bold;
-    letter-spacing: 1px;
-}
-
-/* 优化AI消息中的表格样式 */
-.ai-message .message-content table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 20px 0;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-.ai-message .message-content th,
-.ai-message .message-content td {
-    padding: 15px;
-    text-align: left;
-    border-bottom: 1px solid #eee;
-}
-
-.ai-message .message-content th {
-    background: linear-gradient(135deg, #FFB6C1, #FF69B4);
-    color: white;
-    font-weight: 600;
-}
-
-.ai-message .message-content tr:nth-child(even) {
-    background-color: #f9f9f9;
-}
-
-.ai-message .message-content tr:hover {
-    background-color: #f1f1f1;
-}
-
 /* 输入区域样式 */
 .input-area {
-    padding: 20px 25px;
+    padding: 30px 25px;
     border-top: 1px solid rgba(255, 182, 193, 0.2);
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
@@ -1090,13 +1017,19 @@ body {
 
 .input-container {
     border: 1px solid rgba(255, 182, 193, 0.2);
-    border-radius: 18px;
-    padding: 15px;
+    border-radius: 12px;
+    padding: 25px 20px;
     transition: all 0.3s ease;
     background: white;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
     position: relative;
     overflow: hidden;
+}
+
+/* 首页状态下的胶囊形状 */
+.main-content.empty-chat .input-container {
+    border-radius: 30px;
+    padding: 25px 30px;
 }
 
 .input-container::before {
@@ -1141,11 +1074,11 @@ body {
     border: none;
     outline: none;
     resize: none;
-    min-height: 24px;
+    min-height: 40px;
     max-height: none;
     font-size: 15px;
     line-height: 1.6;
-    padding: 0;
+    padding: 8px 0;
     margin: 0;
     color: var(--text-dark);
     overflow-y: hidden;
@@ -1163,21 +1096,23 @@ body {
     align-items: center;
     gap: 8px;
     padding: 10px 18px;
-    border: 1px solid transparent;
-    border-radius: 16px;
-    background: linear-gradient(145deg, #f9f9f9, #e6e6e6);
-    color: var(--text-light);
+    border: 1px solid rgba(255, 182, 193, 0.2);
+    border-radius: 20px;
+    background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
+    color: var(--text-dark);
     cursor: pointer;
     font-size: 14px;
     font-weight: 600;
     white-space: nowrap;
-    transition: all 0.3s ease-in-out;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     min-width: 80px;
     justify-content: center;
     margin-right: 12px;
     position: relative;
     overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 6px 20px rgba(255, 105, 180, 0.1), 0 2px 8px rgba(0, 0, 0, 0.05);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
 
 .model-button::before {
@@ -1219,8 +1154,8 @@ body {
     background: var(--candy-gradient);
     color: white;
     border-color: transparent;
-    box-shadow: 0 6px 20px rgba(255, 105, 180, 0.4), 0 2px 8px rgba(0, 0, 0, 0.1);
-    transform: translateY(-2px) scale(1.05);
+    box-shadow: var(--candy-shadow), 0 0 20px rgba(255, 105, 180, 0.4);
+    transform: translateY(-2px) scale(1.02);
 }
 
 .model-button.active::after {
@@ -1269,8 +1204,7 @@ body {
 }
 
 .model-button i {
-    color: var(--candy-pink);
-    font-size: 14px;
+    font-size: 15px;
     transition: all 0.3s ease;
     position: relative;
     z-index: 1;
@@ -1286,9 +1220,14 @@ body {
 }
 
 .model-button:hover:not(.active) {
-    border-color: rgba(255, 105, 180, 0.5);
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08), 0 4px 10px rgba(0, 0, 0, 0.06);
+    transform: translateY(-3px) scale(1.03);
+    box-shadow: 0 8px 20px rgba(255, 105, 180, 0.18), 0 4px 8px rgba(0, 0, 0, 0.1);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), white);
+}
+
+.model-button:active:not(.active) {
+    transform: translateY(-1px) scale(0.98);
+    box-shadow: 0 2px 8px rgba(255, 105, 180, 0.15), 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 
 .model-button:hover:not(.active) i {
@@ -1350,9 +1289,9 @@ body {
 }
 
 .send-button {
-    background: var(--candy-gradient);
+    background: linear-gradient(135deg, #FF69B4 0%, #DA70D6 50%, #FFB6C1 100%);
     border: none;
-    border-radius: 50%;
+    border-radius: 16px;
     width: 48px;
     height: 48px;
     display: flex;
@@ -1361,7 +1300,7 @@ body {
     cursor: pointer;
     color: white;
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    box-shadow: var(--candy-shadow);
+    box-shadow: 0 8px 25px rgba(255, 105, 180, 0.3), 0 3px 10px rgba(0, 0, 0, 0.1);
     position: relative;
     overflow: hidden;
 }
