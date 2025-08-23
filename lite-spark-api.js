@@ -258,8 +258,8 @@ if (!window.liteSparkAPI) {
                 parameter: {
                     chat: {
                         domain: this.domain,
-                        temperature: 0.5,
-                        max_tokens: 4039
+                        temperature: 1,
+                        max_tokens: 4000
                     }
                 },
                 payload: {

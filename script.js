@@ -478,17 +478,17 @@ document.addEventListener('DOMContentLoaded', function() {
     let lastUserMessage = '';
 
     // AI模型选择配置
-    let deepThinkingMode = false; // DeepSeek R1 模式
+    let deepThinkingMode = false; // DeepSeek V3.1-Thinking 模式
     let useDeepseekV3Model = false; // DeepSeek V3 模式
     let useDeepseekModel = false; // 通用DeepSeek模型标识
     let currentAIModel = 'spark'; // 默认使用星火模型
     
     if (perfectAnswerToggle) {
-        console.log('[调试] 初始化DeepSeek R1按钮');
+        console.log('[调试] 初始化DeepSeek (Thinking)按钮');
         perfectAnswerToggle.addEventListener('click', function() {
-            console.log('[调试] 点击DeepSeek R1按钮');
+            console.log('[调试] 点击DeepSeek (Thinking)按钮');
             
-            // 切换R1模式
+            // 切换Thinking模式
             if (!deepThinkingMode) {
                 deepThinkingMode = true;
                 useDeepseekModel = true;
@@ -509,10 +509,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 currentAIModel = useDeepseekV3Model ? 'deepseek' : 'spark';
             }
             
-            console.log('[调试] DeepSeek R1模式:', deepThinkingMode ? '开启' : '关闭');
+            console.log('[调试] DeepSeek (Thinking)模式:', deepThinkingMode ? '开启' : '关闭');
             
             this.classList.toggle('active', deepThinkingMode);
-            this.title = deepThinkingMode ? '已启用DeepSeek R1' : '已关闭DeepSeek R1';
+            this.title = deepThinkingMode ? '已启用DeepSeek (Thinking)' : '已关闭DeepSeek (Thinking)';
             
             // 修改视觉反馈样式和占位符
             if (deepThinkingMode) {
@@ -521,7 +521,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 this.style.borderColor = '#FF69B4';
                 const icon = this.querySelector('i');
                 if (icon) icon.style.color = 'white';
-                messageInput.placeholder = '正在使用满血版DeepSeek（R1）深度思考模型！';
+                messageInput.placeholder = '正在使用满血版DeepSeek（Thinking）深度思考模型！';
             } else {
                 this.style.backgroundColor = '';
                 this.style.color = '';
@@ -530,7 +530,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (icon) icon.style.color = '';
                 // 恢复占位符文本
                 if (useDeepseekV3Model) {
-                    messageInput.placeholder = '正在使用满血版DeepSeek（V3）对话模型！';
+                    messageInput.placeholder = '正在使用满血版DeepSeek（V3.1）对话模型！';
                 } else {
                     messageInput.placeholder = '已接入满血版DeepSeek和讯飞星火MAX模型！';
                 }
@@ -557,7 +557,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 useDeepseekV3Model = true;
                 useDeepseekModel = true;
                 currentAIModel = 'deepseek';
-                // 关闭R1模式（如果开启）
+                // 关闭Thinking模式（如果开启）
                 if (deepThinkingMode) {
                     deepThinkingMode = false;
                     perfectAnswerToggle.classList.remove('active');
@@ -569,14 +569,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             } else {
                 useDeepseekV3Model = false;
-                useDeepseekModel = deepThinkingMode; // 如果R1开启则保持DeepSeek模型
+                useDeepseekModel = deepThinkingMode; // 如果Thinking开启则保持DeepSeek模型
                 currentAIModel = deepThinkingMode ? 'deepseek' : 'spark';
             }
             
             console.log('[调试] DeepSeek V3模式:', useDeepseekV3Model ? '开启' : '关闭');
             console.log('[调试] 当前AI模型:', currentAIModel);
             this.classList.toggle('active', useDeepseekV3Model);
-            this.title = useDeepseekV3Model ? '已启用DeepSeek V3' : '已关闭DeepSeek V3';
+            this.title = useDeepseekV3Model ? '已启用DeepSeek (V3.1)' : '已关闭DeepSeek (V3.1)';
             
             // 修改视觉反馈样式和占位符
             if (useDeepseekV3Model) {
@@ -585,7 +585,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 this.style.borderColor = '#FF69B4';
                 const icon = this.querySelector('i');
                 if (icon) icon.style.color = 'white';
-                messageInput.placeholder = '正在使用满血版DeepSeek（V3）对话模型！';
+                messageInput.placeholder = '正在使用满血版DeepSeek（V3.1）对话模型！';
             } else {
                 this.style.backgroundColor = '';
                 this.style.color = '';
@@ -594,7 +594,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (icon) icon.style.color = '';
                 // 恢复占位符文本
                 if (deepThinkingMode) {
-                    messageInput.placeholder = '正在使用满血版DeepSeek（R1）深度思考模型！';
+                    messageInput.placeholder = '正在使用满血版DeepSeek（Thinking）深度思考模型！';
                 } else {
                     messageInput.placeholder = '已接入满血版DeepSeek和讯飞星火MAX模型！';
                 }
@@ -662,6 +662,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     sidebar.classList.remove('collapsed');
                 }
             }
+            
+            // 更新切换按钮位置
+            updateToggleButtonPosition();
         }
     }
     
@@ -676,6 +679,20 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!isResponsiveMode && isSidebarCollapsed) {
         sidebar.classList.add('collapsed');
     }
+    
+    // 初始化切换按钮位置
+    updateToggleButtonPosition();
+
+    // 更新切换按钮位置
+    function updateToggleButtonPosition() {
+        if (!isResponsiveMode) {
+            if (sidebar.classList.contains('collapsed')) {
+                toggleSidebar.style.left = '80px';
+            } else {
+                toggleSidebar.style.left = '280px';
+            }
+        }
+    }
 
     // 处理侧边栏折叠/展开
     toggleSidebar.addEventListener('click', () => {
@@ -685,6 +702,9 @@ document.addEventListener('DOMContentLoaded', function() {
             sidebar.classList.toggle('collapsed');
             userManuallyCollapsed = sidebar.classList.contains('collapsed');
             localStorage.setItem('sidebarCollapsed', userManuallyCollapsed);
+            
+            // 更新切换按钮位置
+            updateToggleButtonPosition();
         }
     });
     
@@ -1580,7 +1600,11 @@ document.addEventListener('DOMContentLoaded', function() {
     function getChatContent() {
         return Array.from(chatMessages.children)
             .map(msg => {
-                const contentEl = msg.querySelector('.message-content');
+                // 首先尝试查找 .message-text 元素，如果没有则查找 .message-content
+                let contentEl = msg.querySelector('.message-text');
+                if (!contentEl) {
+                    contentEl = msg.querySelector('.message-content');
+                }
                 if (!contentEl) return '';
                 
                 // 创建一个临时元素来处理内容
@@ -1607,10 +1631,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     img.outerHTML = `[${alt}](${src})`;
                 });
                 
+                // 移除模型标签（如"讯飞-MAX"、"V3.1-Thinking"等）
+                const modelTags = tempDiv.querySelectorAll('.model-tag');
+                modelTags.forEach(tag => tag.remove());
+                
                 // 获取处理后的文本内容
                 const content = tempDiv.innerText || tempDiv.textContent || '';
                 return msg.classList.contains('user-message') ? `用户: ${content}` : `AI: ${content}`;
             })
+            .filter(content => content.trim() !== '') // 过滤掉空内容
             .join('\n\n');
     }
 
@@ -1705,7 +1734,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         });
                         break;
                     case 1: // DEEPSEEK
-                        addMessage('你好我是SMT-AI，基于DeepSeek深度思考大模型开发的AI对话智能体！', false, true);
+                        addMessage('你好我是SMT-AI，基于DeepSeek V3.1大模型开发的AI对话智能体！', false, true);
                         break;
                     case 2: // 有彩蛋
                         createCandyHeart();
@@ -1736,7 +1765,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // SMTAI的随机回复
         const smtaiResponses = [
             '您好！我是SMT-AI智能助手SAI。如您有任何任何问题，我会尽我所能为您提供帮助。',
-            '你好！我是SMT-AI大模型R1，专门设计用来提供信息、解答问题、协助学习和执行各种任务。我可以帮助用户获取知识、解决问题、进行语言翻译、提供建议等。我的目标是使信息获取更加便捷，帮助用户更高效地完成任务。如果你有任何问题或需要帮助，随时可以问我！'
+            '你好！我是SMT-AI大模型V3.1，专门设计用来提供信息、解答问题、协助学习和执行各种任务。我可以帮助用户获取知识、解决问题、进行语言翻译、提供建议等。我的目标是使信息获取更加便捷，帮助用户更高效地完成任务。如果你有任何问题或需要帮助，随时可以问我！'
         ];
         
         // 添加SMTAI的快捷回复（完全匹配，不区分大小写）
@@ -1746,7 +1775,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // 添加SMT彩蛋的快捷回复（匹配SMT，不区分大小写）
         if (standardMessage.toUpperCase() === 'SMT') {
-            return '爱心💗🍬送给你，继续和R1大模型的SMTAI聊天吧～';
+            return '爱心💗🍬送给你，继续和V3.1大模型的SMTAI聊天吧～';
         }
         
         if (timeQuestions.includes(standardMessage)) {
@@ -2021,11 +2050,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         
                         // 如果消息完成，保存到聊天记录
                         if (isComplete) {
-                            // 添加XF-MAX模式标签
-                            const messageContent = tempAiMessage.querySelector('.message-content p');
-                            if (messageContent) {
-                                messageContent.innerHTML += `<small class="model-tag spark-mode">XF-MAX模式</small>`;
-                            }
+                            // 添加讯飞-MAX模式标签
+                const messageContent = tempAiMessage.querySelector('.message-content p');
+                if (messageContent) {
+                    messageContent.innerHTML += `<small class="model-tag spark-mode">讯飞-MAX</small>`;
+                }
                             
                             currentChat.messages.push({
                                 type: 'ai',
@@ -2122,34 +2151,25 @@ document.addEventListener('DOMContentLoaded', function() {
         let simulationActive = false;
         if (deepThinkingMode && window.liteSparkAPI) {
             simulationActive = true;
-            const simulationPrompt = `你是一个专门模拟AI深度思考过程的助手。请模拟一个AI在深度思考时的内心独白，展现思维的层次性和逻辑性。要求：
+            const simulationPrompt = `你是一个高级AI思维模拟器，专门展现深度推理过程。请基于用户问题进行真实的思维模拟，体现AI的认知层次和逻辑链条。
 
-1. 输出至少1000-4000字的思考过程！请灵活调整字数输出！
-2. 只展现思考过程！
-3. 使用第一人称视角，如"我需要..."、"让我想想..."、"这里我要考虑..."
-4. 体现多层次思考：初步理解→深入分析→多角度考虑→潜在问题识别→方案评估
-5. 展现思维的跳跃和递进，包含自我质疑和修正
-6. 适当使用思考标记词："嗯..."、"等等"、"不对"、"让我重新思考"、"还有一个问题"
+核心要求：
+1. 字数控制：你必须根据问题复杂度灵活调整（简单问题1000-1500字，复杂问题2000-3500字)!
+2. 思维层次：问题理解（分析用户的问题，提取关键信息） → 知识检索 → 逻辑推理 → 方案构建 → 验证优化
+3. 认知特征：体现AI的并行思考、快速关联、模式识别能力
+4. 表达风格：第一人称内心独白，自然流畅，避免过度程式化
+5. 灵活调整：根据问题复内容调整思考类型和层次！！！
 
-示例格式：
-嗯，用户的问题是关于...让我仔细分析一下。
+思维模式示例：
+嗯，用户的问题是(此处替换为用户的具体问题)
 
-首先，我需要理解这个问题的核心是什么...
+首先，我需要...
 
-然后，我需要深入分析这个问题...
+其次，我需要...
 
-等等，这里还有一个更深层的问题需要考虑...
+等等，我还需要考虑...
 
-从另一个角度来看...
-
-不过，我还需要考虑一些其他因素...
-
-需要注意的是...
-
-嗯，这下应该对了...
-
-让我重新整理一下思路...
-
+嗯，这下应该对了，让我重新整理一下...
 
 用户问题：${userInput}`
             
@@ -2271,11 +2291,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
 
-            // 如果开启了深度思考模式，添加标签
+            // 根据模式添加不同的标签
             if (deepThinkingMode) {
                 const messageContent = tempAiMessage.querySelector('.message-content p');
                 if (messageContent) {
-                    messageContent.innerHTML += `<small class="model-tag deep-thinking">DS深度思考R1</small>`;
+                    messageContent.innerHTML += `<small class="model-tag deep-thinking">V3.1-Thinking</small>`;
+                }
+            } else if (useDeepseekV3Model) {
+                const messageContent = tempAiMessage.querySelector('.message-content p');
+                if (messageContent) {
+                    messageContent.innerHTML += `<small class="model-tag deepseek-v3">V3.1-chat</small>`;
                 }
             }
 

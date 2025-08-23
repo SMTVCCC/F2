@@ -243,34 +243,7 @@
             width: 80px;
             padding: 15px 10px;
         }
-        .sidebar.collapsed .chat-history,
-        .sidebar.collapsed .clear-history,
-        .sidebar.collapsed .user-info span,
-        .sidebar.collapsed .menu-item span {
-            display: none;
-        }
-        .sidebar.collapsed .logo {
-            width: 40px;
-            height: 40px;
-            margin: 0 auto 10px;
-        }
-        .sidebar.collapsed .toggle-sidebar {
-            transform: rotate(180deg);
-        }
-        .sidebar.collapsed .new-chat {
-            padding: 8px;
-            justify-content: center;
-        }
-        .sidebar.collapsed .menu-items {
-            align-items: center;
-        }
-        .sidebar.collapsed .menu-item {
-            justify-content: center;
-            padding: 10px 0;
-        }
-        .sidebar.collapsed .new-chat span {
-            display: none;
-        }
+        /* 侧边栏收缩样式已移至 styles.css 文件中统一管理 */
         .user-info {
             display: flex;
             align-items: center;
@@ -477,11 +450,11 @@
                         </button>
                         <button class="model-button" id="perfectAnswerToggle">
                             <i class="fa-brands fa-mendeley"></i>
-                            DeepSeek（R1）
+                            DeepSeek（Thinking）
                         </button>
                         <button class="model-button" id="deepseekToggle">
                             <i class="fas fa-comment"></i>
-                            DeepSeek（V3）
+                            DeepSeek（V3.1）
                         </button>
                         <div class="right-buttons">
                             <button class="tool-button" id="copyButton" title="复制聊天内容">
